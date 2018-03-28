@@ -54,7 +54,7 @@ public class HttpServer implements Runnable
 					if(tunnel == null)
 					{
 						String html = "Tunnel " + head.get("Host") + " not found";
-						String header = "HTTP/1.0 404 Not Foun\r\n";
+						String header = "HTTP/1.0 404 Not Found\r\n";
 						header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
 						header = header + html;
 						SocketHelper.sendbuf(socket, header.getBytes());

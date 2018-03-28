@@ -53,7 +53,7 @@ public class ProxyConnect implements Runnable
 					{
 						String html = "没有找到对应的管道：" + protocol.Payload.Url;
 						log.err(html);
-						String header = "HTTP/1.0 404 Not Foun\r\n";
+						String header = "HTTP/1.0 404 Not Found\r\n";
 						header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
 						header = header + html;
 						SocketHelper.sendbuf(socket, header.getBytes());
