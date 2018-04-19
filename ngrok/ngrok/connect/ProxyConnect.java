@@ -101,10 +101,11 @@ public class ProxyConnect implements Runnable
 	private Tunnel getTunnelByUrl(String url)
 	{
 		String protocol = url.split(":")[0];
-		String hostname = url.split("//")[1];
-		String subdomain = hostname.split("\\.")[0];
+		String host = url.split("//")[1];
 		if("http".equals(protocol) || "https".equals(protocol))
 		{
+			String hostname = host.split(":")[0];
+			String subdomain = hostname.split("\\.")[0];
 			for(Tunnel tunnel : tunnelList)
 			{
 				if(protocol.equals(tunnel.getProtocol()) && (hostname.equals(tunnel.getHostname()) || subdomain.equals(tunnel.getSubdomain())))
@@ -115,7 +116,7 @@ public class ProxyConnect implements Runnable
 		}
 		else if("tcp".equals(protocol))
 		{
-			String remotePort = url.split(":")[2];
+			String remotePort = host.split(":")[1];
 			for(Tunnel tunnel : tunnelList)
 			{
 				if("tcp".equals(tunnel.getProtocol()) && remotePort.equals(String.valueOf(tunnel.getRemotePort())))
