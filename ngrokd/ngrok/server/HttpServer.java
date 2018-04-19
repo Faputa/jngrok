@@ -17,8 +17,8 @@ public class HttpServer implements Runnable
 {
 	private Socket socket;
 	private NgdContext context;
-	private Logger log;
 	private String protocol;
+	private Logger log;
 
 	public HttpServer(Socket socket, NgdContext context, String protocol)
 	{
@@ -31,6 +31,7 @@ public class HttpServer implements Runnable
 	@Override
 	public void run()
 	{
+		log.log("收到%s请求", protocol);
 		try(Socket socket = this.socket)
 		{
 			byte[] buf = SocketHelper.recvbuf(socket);

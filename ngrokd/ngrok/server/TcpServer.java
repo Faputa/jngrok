@@ -27,6 +27,7 @@ public class TcpServer implements Runnable
 	@Override
 	public void run()
 	{
+		log.log("收到tcp请求");
 		try(Socket socket = this.socket)
 		{
 			String url = "tcp://" + context.getDomain() + ":" + socket.getLocalPort();
