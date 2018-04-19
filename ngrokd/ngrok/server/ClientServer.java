@@ -86,31 +86,19 @@ public class ClientServer implements Runnable
 				{
 					if("http".equals(protocol.Payload.Protocol) || "https".equals(protocol.Payload.Protocol))
 					{
-						String domain;
-						if(protocol.Payload.Hostname != null && protocol.Payload.Hostname.length() > 0)
-						{
-							domain = protocol.Payload.Hostname;
-						}
-						else
+						if(protocol.Payload.Hostname == null || protocol.Payload.Hostname.length() == 0)
 						{
 							if(protocol.Payload.Subdomain == null || protocol.Payload.Subdomain.length() == 0)
 							{
 								protocol.Payload.Subdomain = UBUtil.getRandString(5);
 							}
-							domain = protocol.Payload.Subdomain + "." + context.getDomain();
+							protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.getDomain();
 						}
-						String url;
-						if("http".equals(protocol.Payload.Protocol) && context.getHttpPort() != 80)
+						String url = protocol.Payload.Protocol + "://" + protocol.Payload.Hostname;
+						if(("http".equals(protocol.Payload.Protocol) && context.getHttpPort() != 80)
+						|| ("https".equals(protocol.Payload.Protocol) && context.getHttpsPort() != 443))
 						{
-							url = "http://" + domain + ":" + context.getHttpPort();
-						}
-						else if("https".equals(protocol.Payload.Protocol) && context.getHttpsPort() != 443)
-						{
-							url = "https://" + domain + ":" + context.getHttpsPort();
-						}
-						else
-						{
-							url = protocol.Payload.Protocol + "://" + domain;
+							url += ":" + context.getHttpsPort();
 						}
 						if(context.getTunnelInfo(url) != null)
 						{
@@ -126,8 +114,7 @@ public class ClientServer implements Runnable
 					}
 					else if("tcp".equals(protocol.Payload.Protocol))
 					{
-						int rport = protocol.Payload.RemotePort;
-						String url = "tcp://" + context.getDomain() + ":" + rport;
+						String url = "tcp://" + context.getDomain() + ":" + protocol.Payload.RemotePort;
 						if(context.getTunnelInfo(url) != null)
 						{
 							String error = "The tunnel " + url + " is already registered.";
@@ -137,7 +124,7 @@ public class ClientServer implements Runnable
 						ServerSocket serverSocket;
 						try
 						{
-							serverSocket = SocketHelper.newServerSocket(rport);
+							serverSocket = SocketHelper.newServerSocket(protocol.Payload.RemotePort);
 						}
 						catch(IOException e)
 						{
