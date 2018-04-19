@@ -95,8 +95,11 @@ public class ClientServer implements Runnable
 							protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.getDomain();
 						}
 						String url = protocol.Payload.Protocol + "://" + protocol.Payload.Hostname;
-						if(("http".equals(protocol.Payload.Protocol) && context.getHttpPort() != 80)
-						|| ("https".equals(protocol.Payload.Protocol) && context.getHttpsPort() != 443))
+						if("http".equals(protocol.Payload.Protocol) && context.getHttpPort() != 80)
+						{
+							url += ":" + context.getHttpPort();
+						}
+						else if("https".equals(protocol.Payload.Protocol) && context.getHttpsPort() != 443)
 						{
 							url += ":" + context.getHttpsPort();
 						}
