@@ -25,5 +25,6 @@
 	],
 	"serverHost":"myngrok.com",
 	"serverPort":4443,
-	"enableLog":true
+	"enableLog":true,
+	"pingTime":10000
 }

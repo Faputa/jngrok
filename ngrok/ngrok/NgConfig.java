@@ -11,4 +11,5 @@ public class NgConfig
 	public String serverHost = "";
 	public int serverPort = 4443;
 	public boolean enableLog = true;
+	public long pingTime = 10000;
 }

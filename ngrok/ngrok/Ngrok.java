@@ -15,6 +15,7 @@ public class Ngrok
 {
 	private NgContext context = new NgContext();
 	private Logger log = context.getLog();
+	private long pingTime = 10000;// 心跳包周期默认为10秒
 
 	public void setServerHost(String serverHost)
 	{
@@ -33,7 +34,12 @@ public class Ngrok
 
 	public void setLog(Logger log)
 	{
-		context.setLog(log);;
+		context.setLog(log);
+	}
+	
+	public void setPingTime(long pingTime)
+	{
+		this.setPingTime(pingTime);
 	}
 
 	public void start()
@@ -46,7 +52,7 @@ public class Ngrok
 			while(true)
 			{
 				SocketHelper.sendpack(socket, NgMsg.Ping());
-				try{Thread.sleep(5000);}catch(InterruptedException e){}
+				try{Thread.sleep(this.pingTime);}catch(InterruptedException e){}
 			}
 		}
 		catch(Exception e)
@@ -63,6 +69,7 @@ public class Ngrok
 		ngrok.setTunnelList(config.tunnelList);
 		ngrok.setServerHost(config.serverHost);
 		ngrok.setServerPort(config.serverPort);
+		ngrok.setPingTime(config.pingTime);
 		ngrok.setLog(new LoggerImpl().setEnableLog(config.enableLog));
 		ngrok.start();
 	}

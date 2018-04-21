@@ -39,7 +39,7 @@ public class Ngrokd
 
 	public void setLog(Logger log)
 	{
-		context.setLog(log);;
+		context.setLog(log);
 	}
 
 	public void start()

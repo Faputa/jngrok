@@ -3,7 +3,6 @@
  */
 package ngrok.server;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
@@ -70,7 +69,16 @@ public class ClientServer implements Runnable
 					{
 						break;
 					}
-					SocketHelper.sendpack(socket, NgdMsg.StartProxy(link.getUrl()));
+					try
+					{
+						SocketHelper.sendpack(socket, NgdMsg.StartProxy(link.getUrl()));
+					}
+					catch(Exception e)// 防止代理连接睡死
+					{
+						SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());
+						linkQueue.put(link);
+						break;
+					}
 					link.putProxySocket(socket);
 					SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());
 					try(Socket outerSocket = link.getOuterSocket())
@@ -129,7 +137,7 @@ public class ClientServer implements Runnable
 						{
 							serverSocket = SocketHelper.newServerSocket(protocol.Payload.RemotePort);
 						}
-						catch(IOException e)
+						catch(Exception e)
 						{
 							String error = "The tunnel " + url + " is already registered.";
 							SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
