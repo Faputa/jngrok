@@ -80,9 +80,9 @@ public class ClientServer implements Runnable
 						break;
 					}
 					link.putProxySocket(socket);
-					SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());
 					try(Socket outerSocket = link.getOuterSocket())
 					{
+						SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());
 						SocketHelper.forward(socket, outerSocket);
 					}
 					catch(Exception e)
