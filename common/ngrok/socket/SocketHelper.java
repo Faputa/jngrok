@@ -131,12 +131,8 @@ public class SocketHelper
 		OutputStream os = s2.getOutputStream();
 		int len;
 		byte[] buf = new byte[1024];
-		while(true)
+		while((len = is.read(buf)) != -1)
 		{
-			if((len = is.read(buf)) == -1)
-			{
-				return;
-			}
 			os.write(buf, 0, len);
 		}
 	}
