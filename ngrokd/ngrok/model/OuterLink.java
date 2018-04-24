@@ -41,26 +41,13 @@ public class OuterLink
 		this.controlSocket = controlSocket;
 	}
 
-	public Socket takeProxySocket()
+	public Socket takeProxySocket() throws InterruptedException
 	{
-		try
-		{
-			return proxySocketQueue.take();
-		}
-		catch(InterruptedException e)
-		{
-		}
-		return null;
+		return proxySocketQueue.take();
 	}
 
-	public void putProxySocket(Socket proxySocket)
+	public void putProxySocket(Socket proxySocket) throws InterruptedException
 	{
-		try
-		{
-			proxySocketQueue.put(proxySocket);
-		}
-		catch(InterruptedException e)
-		{
-		}
+		proxySocketQueue.put(proxySocket);
 	}
 }

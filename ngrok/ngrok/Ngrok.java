@@ -39,7 +39,7 @@ public class Ngrok
 	
 	public void setPingTime(long pingTime)
 	{
-		this.setPingTime(pingTime);
+		this.pingTime = pingTime;
 	}
 
 	public void start()

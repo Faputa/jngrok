@@ -5,14 +5,12 @@ package ngrok.server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
-import ngrok.log.Logger;
 import ngrok.NgdContext;
 import ngrok.NgdMsg;
 import ngrok.Protocol;
 import ngrok.listener.TcpListener;
+import ngrok.log.Logger;
 import ngrok.model.OuterLink;
 import ngrok.model.TunnelInfo;
 import ngrok.socket.PacketReader;
@@ -52,34 +50,29 @@ public class ClientServer implements Runnable
 				if("Auth".equals(protocol.Type))
 				{
 					clientId = UBUtil.MD5(String.valueOf(System.currentTimeMillis()));
-					context.putOuterLinkQueue(clientId, new LinkedBlockingQueue<OuterLink>());
+					context.putOuterLinkQueue(clientId);
 					SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId));
 					SocketHelper.sendpack(socket, NgdMsg.ReqProxy());
 				}
 				else if("RegProxy".equals(protocol.Type))
 				{
 					String _clientId = protocol.Payload.ClientId;
-					BlockingQueue<OuterLink> linkQueue = context.getOuterLinkQueue(_clientId);
-					if(linkQueue == null)
-					{
-						break;
-					}
-					OuterLink link = linkQueue.take();// 如果没有会阻塞
-					if(link.getUrl() == null)
+					OuterLink link = context.takeOuterLink(_clientId);
+					if(link == null || link.getUrl() == null)
 					{
 						break;
 					}
 					try
 					{
 						SocketHelper.sendpack(socket, NgdMsg.StartProxy(link.getUrl()));
+						link.putProxySocket(socket);
 					}
 					catch(Exception e)// 防止代理连接睡死
 					{
 						SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());
-						linkQueue.put(link);
+						context.putOuterLink(_clientId, link);
 						break;
 					}
-					link.putProxySocket(socket);
 					try(Socket outerSocket = link.getOuterSocket())
 					{
 						SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());

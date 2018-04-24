@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
@@ -84,24 +85,24 @@ public class NgdContext
 	private Map<String, BlockingQueue<OuterLink>> outerLinkQueueMap = new ConcurrentHashMap<String, BlockingQueue<OuterLink>>();
 	private Map<String, TunnelInfo> tunnelInfoMap = new ConcurrentHashMap<String, TunnelInfo>();
 
-	public BlockingQueue<OuterLink> getOuterLinkQueue(String clientId)
+	public OuterLink takeOuterLink(String clientId) throws InterruptedException
 	{
-		return outerLinkQueueMap.get(clientId);
+		BlockingQueue<OuterLink> queue = outerLinkQueueMap.get(clientId);
+		if(queue == null)
+		{
+			return null;
+		}
+		return queue.take();// 如果没有会阻塞
 	}
 
-	public void putOuterLinkQueue(String clientId, BlockingQueue<OuterLink> outerLinkQueue)
+	public void putOuterLink(String clientId, OuterLink link) throws InterruptedException
 	{
-		outerLinkQueueMap.put(clientId, outerLinkQueue);
+		outerLinkQueueMap.get(clientId).put(link);
 	}
 
-	public TunnelInfo getTunnelInfo(String url)
+	public void putOuterLinkQueue(String clientId)
 	{
-		return tunnelInfoMap.get(url);
-	}
-
-	public void putTunnelInfo(String url, TunnelInfo tunnelInfo)
-	{
-		tunnelInfoMap.put(url, tunnelInfo);
+		outerLinkQueueMap.put(clientId, new LinkedBlockingQueue<OuterLink>());
 	}
 
 	public void delOuterLinkQueue(String clientId)
@@ -111,7 +112,13 @@ public class NgdContext
 		{
 			for(OuterLink link : queue)
 			{
-				link.putProxySocket(new Socket());// put一个空Socket，确保HttpServer/TcpServer线程能够结束阻塞
+				try
+				{
+					link.putProxySocket(new Socket());// put一个空Socket，确保HttpServer/TcpServer线程能够结束阻塞
+				}
+				catch(InterruptedException e)
+				{
+				}
 			}
 			try
 			{
@@ -124,6 +131,16 @@ public class NgdContext
 		}
 	}
 
+	public TunnelInfo getTunnelInfo(String url)
+	{
+		return tunnelInfoMap.get(url);
+	}
+
+	public void putTunnelInfo(String url, TunnelInfo tunnelInfo)
+	{
+		tunnelInfoMap.put(url, tunnelInfo);
+	}
+
 	public void delTunnelInfo(String clientId)
 	{
 		Iterator<Map.Entry<String, TunnelInfo>> it = tunnelInfoMap.entrySet().iterator();
@@ -134,7 +151,13 @@ public class NgdContext
 			{
 				if(tunnel.getTcpServerSocket() != null)
 				{
-					try{tunnel.getTcpServerSocket().close();}catch(IOException e){}
+					try
+					{
+						tunnel.getTcpServerSocket().close();
+					}
+					catch(IOException e)
+					{
+					}
 				}
 				it.remove();
 			}

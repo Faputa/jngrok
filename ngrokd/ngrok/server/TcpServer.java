@@ -38,7 +38,7 @@ public class TcpServer implements Runnable
 				outerLink.setUrl(url);
 				outerLink.setOuterSocket(socket);
 				outerLink.setControlSocket(tunnel.getControlSocket());
-				context.getOuterLinkQueue(tunnel.getClientId()).put(outerLink);
+				context.putOuterLink(tunnel.getClientId(), outerLink);
 				try(Socket proxySocket = outerLink.takeProxySocket())// 如果没有会阻塞
 				{
 					SocketHelper.forward(socket, proxySocket);
