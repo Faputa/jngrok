@@ -100,7 +100,7 @@ public class NgdContext
 		outerLinkQueueMap.get(clientId).put(link);
 	}
 
-	public void putOuterLinkQueue(String clientId)
+	public void initOuterLinkQueue(String clientId)
 	{
 		outerLinkQueueMap.put(clientId, new LinkedBlockingQueue<OuterLink>());
 	}

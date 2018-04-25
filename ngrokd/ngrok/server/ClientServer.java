@@ -50,7 +50,7 @@ public class ClientServer implements Runnable
 				if("Auth".equals(protocol.Type))
 				{
 					clientId = UBUtil.MD5(String.valueOf(System.currentTimeMillis()));
-					context.putOuterLinkQueue(clientId);
+					context.initOuterLinkQueue(clientId);
 					SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId));
 					SocketHelper.sendpack(socket, NgdMsg.ReqProxy());
 				}
