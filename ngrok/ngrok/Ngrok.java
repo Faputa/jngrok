@@ -51,8 +51,8 @@ public class Ngrok
 			thread.start();
 			while(true)
 			{
-				SocketHelper.sendpack(socket, NgMsg.Ping());
 				try{Thread.sleep(this.pingTime);}catch(InterruptedException e){}
+				SocketHelper.sendpack(socket, NgMsg.Ping());
 			}
 		}
 		catch(Exception e)
