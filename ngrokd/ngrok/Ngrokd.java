@@ -6,7 +6,7 @@ import ngrok.listener.HttpsListener;
 import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
 import ngrok.util.GsonUtil;
-import ngrok.util.UBUtil;
+import ngrok.util.Util;
 
 public class Ngrokd
 {
@@ -68,10 +68,10 @@ public class Ngrokd
 
 	public static void main(String[] args)
 	{
-		System.setProperty("javax.net.ssl.keyStore", UBUtil.getLocation("resource/server_ks.jks"));
+		System.setProperty("javax.net.ssl.keyStore", Util.getLocation("resource/server_ks.jks"));
 		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
 
-		String json = UBUtil.readTextFile(UBUtil.getLocation("resource/server.json"));
+		String json = Util.readTextFile(Util.getLocation("resource/server.json"));
 		NgdConfig config = GsonUtil.toBean(json, NgdConfig.class);
 		Ngrokd ngrokd = new Ngrokd();
 		ngrokd.setDomain(config.domain);

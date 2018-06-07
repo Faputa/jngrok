@@ -12,9 +12,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-public class UBUtil
+public class Util
 {
-	private UBUtil()
+	private Util()
 	{
 	}
 
@@ -32,7 +32,7 @@ public class UBUtil
 
 	public static String getLocation(String path)
 	{
-		String location = UBUtil.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		String location = Util.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 		if(location.endsWith(".jar"))
 		{
 			location = location.substring(0, location.lastIndexOf("/") + 1);

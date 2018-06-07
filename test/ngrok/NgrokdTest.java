@@ -1,12 +1,12 @@
 package ngrok;
 
-import ngrok.util.UBUtil;
+import ngrok.util.Util;
 
 public class NgrokdTest
 {
 	public static void main(String[] args)
 	{
-		System.setProperty("javax.net.ssl.keyStore", UBUtil.getLocation("resource/server_ks.jks"));
+		System.setProperty("javax.net.ssl.keyStore", Util.getLocation("resource/server_ks.jks"));
 		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
 
 		Ngrokd ngrokd = new Ngrokd();

@@ -1,6 +1,6 @@
 package ngrok.log;
 
-import ngrok.util.UBUtil;
+import ngrok.util.Util;
 
 public class LoggerImpl implements Logger
 {
@@ -22,7 +22,7 @@ public class LoggerImpl implements Logger
 	{
 		if(enableLog)
 		{
-			System.out.printf("[%s] %s\n", UBUtil.getTime(), String.format(fmt, args));
+			System.out.printf("[%s] %s\n", Util.getTime(), String.format(fmt, args));
 		}
 	}
 
@@ -31,7 +31,7 @@ public class LoggerImpl implements Logger
 	{
 		if(enableLog)
 		{
-			System.err.printf("[%s] %s\n", UBUtil.getTime(), String.format(fmt, args));
+			System.err.printf("[%s] %s\n", Util.getTime(), String.format(fmt, args));
 		}
 	}
 }

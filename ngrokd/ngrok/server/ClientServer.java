@@ -16,7 +16,7 @@ import ngrok.model.TunnelInfo;
 import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
 import ngrok.util.GsonUtil;
-import ngrok.util.UBUtil;
+import ngrok.util.Util;
 
 public class ClientServer implements Runnable
 {
@@ -49,7 +49,7 @@ public class ClientServer implements Runnable
 				Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
 				if("Auth".equals(protocol.Type))
 				{
-					clientId = UBUtil.MD5(String.valueOf(System.currentTimeMillis()));
+					clientId = Util.MD5(String.valueOf(System.currentTimeMillis()));
 					context.initOuterLinkQueue(clientId);
 					SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId));
 					SocketHelper.sendpack(socket, NgdMsg.ReqProxy());
@@ -91,7 +91,7 @@ public class ClientServer implements Runnable
 						{
 							if(protocol.Payload.Subdomain == null || protocol.Payload.Subdomain.length() == 0)
 							{
-								protocol.Payload.Subdomain = UBUtil.getRandString(5);
+								protocol.Payload.Subdomain = Util.getRandString(5);
 							}
 							protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.getDomain();
 						}
