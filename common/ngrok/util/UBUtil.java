@@ -57,6 +57,7 @@ public class UBUtil
 			}
 			catch(IOException e)
 			{
+				e.printStackTrace();
 			}
 		}
 		return sb.toString();
@@ -79,6 +80,7 @@ public class UBUtil
 		}
 		catch(Exception e)
 		{
+			e.printStackTrace();
 		}
 		return "";
 	}
