@@ -10,7 +10,7 @@ public class ByteUtil
 	{
 	}
 
-	public String bytesToHex(byte[] bytes)
+	public static String bytesToHex(byte[] bytes)
 	{
 		final char[] hexArray = "0123456789ABCDEF".toCharArray();
 		StringBuilder sb = new StringBuilder();
