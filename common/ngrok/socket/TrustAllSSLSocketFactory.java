@@ -21,7 +21,7 @@ public class TrustAllSSLSocketFactory
 	public TrustAllSSLSocketFactory() throws Exception
 	{
 		ssf = trustAllSocketFactory();
-    }
+	}
 
 	public SSLSocket createSocket(String serverAddress, int serverPort) throws UnknownHostException, IOException
 	{
