@@ -57,7 +57,7 @@ public class Ngrok
 		}
 		catch(Exception e)
 		{
-			log.err(e.getMessage());
+			log.err(e.toString());
 		}
 	}
 

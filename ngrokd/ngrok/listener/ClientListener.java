@@ -39,7 +39,7 @@ public class ClientListener implements Runnable
 		}
 		catch(IOException e)
 		{
-			log.err(e.getMessage());
+			log.err(e.toString());
 		}
 	}
 }

@@ -156,7 +156,7 @@ public class ClientServer implements Runnable
 		}
 		catch(Exception e)
 		{
-			log.err(e.getMessage());
+			log.err(e.toString());
 		}
 		if(clientId != null)
 		{

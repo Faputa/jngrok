@@ -80,7 +80,7 @@ public class HttpServer implements Runnable
 		}
 		catch(Exception e)
 		{
-			log.err(e.getMessage());
+			log.err(e.toString());
 		}
 	}
 }
