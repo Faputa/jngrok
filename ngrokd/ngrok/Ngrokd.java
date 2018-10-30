@@ -14,32 +14,47 @@ public class Ngrokd
 
 	public void setDomain(String domain)
 	{
-		context.setDomain(domain);
+		context.domain = domain;
 	}
 
 	public void setHost(String host)
 	{
-		context.setHost(host);
+		context.host = host;
 	}
 
 	public void setHttpPort(int port)
 	{
-		context.setHttpPort(port);
+		context.httpPort = port;
 	}
 
 	public void setHttpsPort(int port)
 	{
-		context.setHttpsPort(port);
+		context.httpsPort = port;
 	}
 
 	public void setPort(int port)
 	{
-		context.setPort(port);
+		context.port = port;
+	}
+
+	public void setTimeout(int timeout)
+	{
+		context.timeout = timeout;
 	}
 
 	public void setLog(Logger log)
 	{
-		context.setLog(log);
+		context.log = log;
+	}
+
+	public void setEnableHttp(boolean enableHttp)
+	{
+		context.enableHttp = enableHttp;
+	}
+
+	public void setEnableHttps(boolean enableHttps)
+	{
+		context.enableHttps = enableHttps;
 	}
 
 	public void start()
@@ -49,15 +64,22 @@ public class Ngrokd
 			Thread clientListenerThread = new Thread(new ClientListener(context));
 			clientListenerThread.setDaemon(true);
 			clientListenerThread.start();
-			Thread httpListenerThread = new Thread(new HttpListener(context));
-			httpListenerThread.setDaemon(true);
-			httpListenerThread.start();
-			Thread httpsListenerThread = new Thread(new HttpsListener(context));
-			httpsListenerThread.setDaemon(true);
-			httpsListenerThread.start();
+			if(context.enableHttp)
+			{
+				Thread httpListenerThread = new Thread(new HttpListener(context));
+				httpListenerThread.setDaemon(true);
+				httpListenerThread.start();
+			}
+			if(context.enableHttps)
+			{
+				Thread httpsListenerThread = new Thread(new HttpsListener(context));
+				httpsListenerThread.setDaemon(true);
+				httpsListenerThread.start();
+			}
 			while(true)
 			{
-				try{Thread.sleep(5000);}catch(InterruptedException e){}
+				try{Thread.sleep(50000);}catch(InterruptedException e){}
+				context.closeIdleClient();
 			}
 		}
 		catch(Exception e)
@@ -77,8 +99,11 @@ public class Ngrokd
 		ngrokd.setDomain(config.domain);
 		ngrokd.setHost(config.host);
 		ngrokd.setPort(config.port);
+		ngrokd.setTimeout(config.timeout);
 		ngrokd.setHttpPort(config.httpPort);
 		ngrokd.setHttpsPort(config.httpsPort);
+		ngrokd.setEnableHttp(config.enableHttp);
+		ngrokd.setEnableHttps(config.enableHttps);
 		ngrokd.setLog(new LoggerImpl().setEnableLog(config.enableLog));
 		ngrokd.start();
 	}

@@ -20,15 +20,15 @@ public class HttpsListener implements Runnable
 	public HttpsListener(NgdContext context)
 	{
 		this.context = context;
-		this.log = context.getLog();
+		this.log = context.log;
 	}
 
 	@Override
 	public void run()
 	{
-		try(ServerSocket ssocket = SocketHelper.newSSLServerSocket(context.getHttpsPort()))
+		try(ServerSocket ssocket = SocketHelper.newSSLServerSocket(context.httpsPort))
 		{
-			log.log("监听建立成功：[%s:%s]", context.getHost(), context.getHttpsPort());
+			log.log("监听建立成功：[%s:%s]", context.host, context.httpsPort);
 			while(true)
 			{
 				Socket socket = ssocket.accept();
@@ -39,7 +39,7 @@ public class HttpsListener implements Runnable
 		}
 		catch(IOException e)
 		{
-			log.err(e.toString());
+			log.log("监听退出：[%s:%s]", context.host, context.httpsPort);
 		}
 	}
 }

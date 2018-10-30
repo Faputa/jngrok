@@ -5,6 +5,8 @@ package ngrok.server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import ngrok.NgdContext;
 import ngrok.NgdMsg;
@@ -28,7 +30,7 @@ public class ClientServer implements Runnable
 	{
 		this.socket = socket;
 		this.context = context;
-		this.log = context.getLog();
+		this.log = context.log;
 	}
 
 	@Override
@@ -37,7 +39,7 @@ public class ClientServer implements Runnable
 		String clientId = null;
 		try(Socket socket = this.socket)
 		{
-			PacketReader pr = new PacketReader(socket);
+			PacketReader pr = new PacketReader(socket, context.timeout);
 			while(true)
 			{
 				String msg = pr.read();
@@ -50,16 +52,29 @@ public class ClientServer implements Runnable
 				if("Auth".equals(protocol.Type))
 				{
 					clientId = Util.MD5(String.valueOf(System.currentTimeMillis()));
-					context.initOuterLinkQueue(clientId);
+					context.initClientInfo(clientId, socket);
 					SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId));
 					SocketHelper.sendpack(socket, NgdMsg.ReqProxy());
 				}
 				else if("RegProxy".equals(protocol.Type))
 				{
 					String _clientId = protocol.Payload.ClientId;
-					OuterLink link = context.takeOuterLink(_clientId);
-					if(link == null || link.getUrl() == null)
+					BlockingQueue<OuterLink> queue = context.getOuterLinkQueue(_clientId);
+					if(queue == null)
 					{
+						// 客户端信息不存在
+						break;
+					}
+					OuterLink link = queue.poll(60, TimeUnit.SECONDS);
+					if(link == null)
+					{
+						// 代理连接超时，重新发起代理连接
+						SocketHelper.sendpack(context.getControlSocket(_clientId), NgdMsg.ReqProxy());
+						break;
+					}
+					if(link.getUrl() == null)
+					{
+						// 毒丸
 						break;
 					}
 					try
@@ -67,11 +82,9 @@ public class ClientServer implements Runnable
 						SocketHelper.sendpack(socket, NgdMsg.StartProxy(link.getUrl()));
 						link.putProxySocket(socket);
 					}
-					catch(Exception e)// 防止代理连接睡死
+					catch(Exception e)
 					{
-						SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());
-						context.putOuterLink(_clientId, link);
-						break;
+						log.err(e.toString());
 					}
 					try(Socket outerSocket = link.getOuterSocket())
 					{
@@ -93,20 +106,26 @@ public class ClientServer implements Runnable
 							{
 								protocol.Payload.Subdomain = Util.getRandString(5);
 							}
-							protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.getDomain();
+							protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.domain;
 						}
 						String url = protocol.Payload.Protocol + "://" + protocol.Payload.Hostname;
-						if("http".equals(protocol.Payload.Protocol) && context.getHttpPort() != 80)
+						if("http".equals(protocol.Payload.Protocol) && context.httpPort != 80)
 						{
-							url += ":" + context.getHttpPort();
+							url += ":" + context.httpPort;
 						}
-						else if("https".equals(protocol.Payload.Protocol) && context.getHttpsPort() != 443)
+						else if("https".equals(protocol.Payload.Protocol) && context.httpsPort != 443)
 						{
-							url += ":" + context.getHttpsPort();
+							url += ":" + context.httpsPort;
 						}
-						if(context.getTunnelInfo(url) != null)
+						if(!context.enableHttp && "http".equals(protocol.Payload.Protocol))
 						{
-							String error = "The tunnel " + url + " is already registered.";
+							String error = "The tunnel " + url + " is registration failed, becase http is disabled.";
+							SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
+							break;
+						}
+						if(!context.enableHttps  && "https".equals(protocol.Payload.Protocol))
+						{
+							String error = "The tunnel " + url + " is registration failed, becase https is disabled.";
 							SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
 							break;
 						}
@@ -118,12 +137,10 @@ public class ClientServer implements Runnable
 					}
 					else if("tcp".equals(protocol.Payload.Protocol))
 					{
-						String url = "tcp://" + context.getDomain() + ":" + protocol.Payload.RemotePort;
+						String url = "tcp://" + context.domain + ":" + protocol.Payload.RemotePort;
 						if(context.getTunnelInfo(url) != null)
 						{
-							String error = "The tunnel " + url + " is already registered.";
-							SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
-							break;
+							context.getTunnelInfo(url).getTcpServerSocket().close();
 						}
 						ServerSocket serverSocket;
 						try
@@ -132,7 +149,7 @@ public class ClientServer implements Runnable
 						}
 						catch(Exception e)
 						{
-							String error = "The tunnel " + url + " is already registered.";
+							String error = "The tunnel " + url + " is already registered, becase the port " + protocol.Payload.RemotePort + " is occupied.";
 							SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
 							break;
 						}
@@ -160,7 +177,8 @@ public class ClientServer implements Runnable
 		}
 		if(clientId != null)
 		{
-			context.delOuterLinkQueue(clientId);
+			log.log("客户端 %s 退出", clientId);
+			context.delClientInfo(clientId);
 			context.delTunnelInfo(clientId);
 		}
 	}

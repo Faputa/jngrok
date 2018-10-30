@@ -4,6 +4,7 @@
 package ngrok.server;
 
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 import ngrok.log.Logger;
 import ngrok.NgdContext;
@@ -21,7 +22,7 @@ public class TcpServer implements Runnable
 	{
 		this.socket = socket;
 		this.context = context;
-		this.log = context.getLog();
+		this.log = context.log;
 	}
 
 	@Override
@@ -30,7 +31,7 @@ public class TcpServer implements Runnable
 		log.log("收到tcp请求");
 		try(Socket socket = this.socket)
 		{
-			String url = "tcp://" + context.getDomain() + ":" + socket.getLocalPort();
+			String url = "tcp://" + context.domain + ":" + socket.getLocalPort();
 			TunnelInfo tunnel = context.getTunnelInfo(url);
 			if(tunnel != null)
 			{
@@ -38,8 +39,8 @@ public class TcpServer implements Runnable
 				outerLink.setUrl(url);
 				outerLink.setOuterSocket(socket);
 				outerLink.setControlSocket(tunnel.getControlSocket());
-				context.putOuterLink(tunnel.getClientId(), outerLink);
-				try(Socket proxySocket = outerLink.takeProxySocket())// 如果没有会阻塞
+				context.getOuterLinkQueue(tunnel.getClientId()).put(outerLink);
+				try(Socket proxySocket = outerLink.pollProxySocket(60, TimeUnit.SECONDS))// 最多等待60秒
 				{
 					SocketHelper.forward(socket, proxySocket);
 				}

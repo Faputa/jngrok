@@ -4,5 +4,6 @@
 	"port":4443,
 	"httpPort":80,
 	"httpsPort":443,
+	"timeout":120000,
 	"enableLog":true
 }

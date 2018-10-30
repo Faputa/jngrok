@@ -2,8 +2,10 @@ package ngrok;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,114 +17,45 @@ import ngrok.model.TunnelInfo;
 
 public class NgdContext
 {
-	private String domain;
-	private String host;
-	private int port;
-	private int httpPort;
-	private int httpsPort;
-	private Logger log = new LoggerImpl();// 如果没有注入日志，则使用默认日志
+	public String domain;
+	public String host;
+	public int port = 4443;
+	public int httpPort = 80;
+	public int httpsPort = 443;
+	public int timeout = 120000;
+	public Logger log = new LoggerImpl();// 如果没有注入日志，则使用默认日志
+	public boolean enableHttp = true;
+	public boolean enableHttps = true;
 
-	public String getDomain()
-	{
-		return domain;
-	}
+	// client info
+	private Map<String, BlockingQueue<OuterLink>> outerLinkQueueMap = new ConcurrentHashMap<>();
+	private Map<String, Socket> controlSocketMap = new ConcurrentHashMap<>();
 
-	public void setDomain(String domain)
-	{
-		this.domain = domain;
-	}
-
-	public String getHost()
-	{
-		return host;
-	}
-
-	public void setHost(String host)
-	{
-		this.host = host;
-	}
-
-	public int getPort()
-	{
-		return port;
-	}
-
-	public void setPort(int port)
-	{
-		this.port = port;
-	}
-
-	public int getHttpPort()
-	{
-		return httpPort;
-	}
-
-	public void setHttpPort(int httpPort)
-	{
-		this.httpPort = httpPort;
-	}
-
-	public int getHttpsPort()
-	{
-		return httpsPort;
-	}
-
-	public void setHttpsPort(int httpsPort)
-	{
-		this.httpsPort = httpsPort;
-	}
-
-	public Logger getLog()
-	{
-		return log;
-	}
-
-	public void setLog(Logger log)
-	{
-		this.log = log;
-	}
-
-	private Map<String, BlockingQueue<OuterLink>> outerLinkQueueMap = new ConcurrentHashMap<String, BlockingQueue<OuterLink>>();
-	private Map<String, TunnelInfo> tunnelInfoMap = new ConcurrentHashMap<String, TunnelInfo>();
-
-	public OuterLink takeOuterLink(String clientId) throws InterruptedException
-	{
-		BlockingQueue<OuterLink> queue = outerLinkQueueMap.get(clientId);
-		if(queue == null)
-		{
-			return null;
-		}
-		return queue.take();// 如果没有会阻塞
-	}
-
-	public void putOuterLink(String clientId, OuterLink link) throws InterruptedException
-	{
-		outerLinkQueueMap.get(clientId).put(link);
-	}
-
-	public void initOuterLinkQueue(String clientId)
+	public void initClientInfo(String clientId, Socket controlSocket)
 	{
 		outerLinkQueueMap.put(clientId, new LinkedBlockingQueue<OuterLink>());
+		controlSocketMap.put(clientId, controlSocket);
 	}
 
-	public void delOuterLinkQueue(String clientId)
+	public BlockingQueue<OuterLink> getOuterLinkQueue(String clientId)
 	{
+		return outerLinkQueueMap.get(clientId);
+	}
+
+	public Socket getControlSocket(String clientId)
+	{
+		return controlSocketMap.get(clientId);
+	}
+
+	public void delClientInfo(String clientId)
+	{
+		controlSocketMap.remove(clientId);
 		BlockingQueue<OuterLink> queue = outerLinkQueueMap.get(clientId);
 		if(queue != null)
 		{
-			for(OuterLink link : queue)
-			{
-				try
-				{
-					link.putProxySocket(new Socket());// put一个空Socket，确保HttpServer/TcpServer线程能够结束阻塞
-				}
-				catch(InterruptedException e)
-				{
-				}
-			}
 			try
 			{
-				queue.put(new OuterLink());// put一个空OuterLink，确保ClientServer线程能够结束阻塞
+				queue.put(new OuterLink());// 毒丸
 			}
 			catch(InterruptedException e)
 			{
@@ -130,6 +63,9 @@ public class NgdContext
 			outerLinkQueueMap.remove(clientId);
 		}
 	}
+
+	// tunnel info
+	private Map<String, TunnelInfo> tunnelInfoMap = new ConcurrentHashMap<String, TunnelInfo>();
 
 	public TunnelInfo getTunnelInfo(String url)
 	{
@@ -160,6 +96,28 @@ public class NgdContext
 					}
 				}
 				it.remove();
+			}
+		}
+	}
+
+	public void closeIdleClient()
+	{
+		Set<String> flagSet = new HashSet<>();
+		for(TunnelInfo tunnel : tunnelInfoMap.values())
+		{
+			flagSet.add(tunnel.getClientId());
+		}
+		for(Map.Entry<String, Socket> entry : controlSocketMap.entrySet())
+		{
+			if(!flagSet.contains(entry.getKey()))
+			{
+				try
+				{
+					entry.getValue().close();
+				}
+				catch(IOException e)
+				{
+				}
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package ngrok.socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 import ngrok.util.ByteUtil;
 
@@ -14,6 +15,12 @@ public class PacketReader
 	public PacketReader(Socket socket)
 	{
 		this.socket = socket;
+	}
+
+	public PacketReader(Socket socket, int timeout) throws SocketException
+	{
+		this.socket = socket;
+		this.socket.setSoTimeout(timeout);
 	}
 
 	public String read() throws IOException
@@ -39,6 +46,12 @@ public class PacketReader
 			}
 			para = ByteUtil.concat(para, buf, len);
 		}
+	}
+
+	public String read(int timeout) throws IOException
+	{
+		socket.setSoTimeout(timeout);
+		return read();
 	}
 
 	public void clean()

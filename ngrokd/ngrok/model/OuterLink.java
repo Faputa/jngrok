@@ -3,6 +3,7 @@ package ngrok.model;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class OuterLink
 {
@@ -41,9 +42,9 @@ public class OuterLink
 		this.controlSocket = controlSocket;
 	}
 
-	public Socket takeProxySocket() throws InterruptedException
+	public Socket pollProxySocket(long timeout, TimeUnit unit) throws InterruptedException
 	{
-		return proxySocketQueue.take();
+		return proxySocketQueue.poll(timeout, unit);
 	}
 
 	public void putProxySocket(Socket proxySocket) throws InterruptedException

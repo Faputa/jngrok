@@ -5,6 +5,7 @@ package ngrok.server;
 
 import java.net.Socket;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import ngrok.log.Logger;
 import ngrok.NgdContext;
@@ -25,7 +26,7 @@ public class HttpServer implements Runnable
 		this.socket = socket;
 		this.context = context;
 		this.protocol = protocol;
-		this.log = context.getLog();
+		this.log = context.log;
 	}
 
 	@Override
@@ -65,8 +66,8 @@ public class HttpServer implements Runnable
 					outerLink.setUrl(url);
 					outerLink.setOuterSocket(socket);
 					outerLink.setControlSocket(tunnel.getControlSocket());
-					context.putOuterLink(tunnel.getClientId(), outerLink);
-					try(Socket proxySocket = outerLink.takeProxySocket())// 如果没有会阻塞
+					context.getOuterLinkQueue(tunnel.getClientId()).put(outerLink);
+					try(Socket proxySocket = outerLink.pollProxySocket(60, TimeUnit.SECONDS))// 最多等待60秒
 					{
 						SocketHelper.sendbuf(proxySocket, buf);
 						SocketHelper.forward(socket, proxySocket);

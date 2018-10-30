@@ -20,15 +20,15 @@ public class ClientListener implements Runnable
 	public ClientListener(NgdContext context) throws IOException
 	{
 		this.context = context;
-		this.log = context.getLog();
+		this.log = context.log;
 	}
 
 	@Override
 	public void run()
 	{
-		try(ServerSocket ssocket = SocketHelper.newSSLServerSocket(context.getPort()))
+		try(ServerSocket ssocket = SocketHelper.newSSLServerSocket(context.port))
 		{
-			log.log("监听建立成功：[%s:%s]", context.getHost(), context.getPort());
+			log.log("监听建立成功：[%s:%s]", context.host, context.port);
 			while(true)
 			{
 				Socket socket = ssocket.accept();
