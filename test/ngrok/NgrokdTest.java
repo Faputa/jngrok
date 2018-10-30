@@ -1,13 +1,18 @@
 package ngrok;
 
+import java.io.InputStream;
+
+import ngrok.util.SSLContextUtil;
 import ngrok.util.Util;
 
 public class NgrokdTest
 {
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
-		System.setProperty("javax.net.ssl.keyStore", Util.getLocation("resource/server_ks.jks"));
-		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+//		System.setProperty("javax.net.ssl.keyStore", Util.getLocation("resource/server_ks.jks"));
+//		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+		InputStream keyStream = Util.getResourceAsStream("resource/server_ks.jks");
+		SSLContextUtil.createDefaultSSLContext(keyStream, "123456");
 
 		Ngrokd ngrokd = new Ngrokd();
 		ngrokd.setDomain("myngrok.com");

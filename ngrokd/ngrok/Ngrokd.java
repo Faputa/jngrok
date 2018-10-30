@@ -1,11 +1,14 @@
 package ngrok;
 
+import java.io.InputStream;
+
 import ngrok.listener.ClientListener;
 import ngrok.listener.HttpListener;
 import ngrok.listener.HttpsListener;
 import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
 import ngrok.util.GsonUtil;
+import ngrok.util.SSLContextUtil;
 import ngrok.util.Util;
 
 public class Ngrokd
@@ -88,12 +91,12 @@ public class Ngrokd
 		}
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
-		System.setProperty("javax.net.ssl.keyStore", Util.getLocation("resource/server_ks.jks"));
-		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+		InputStream keyStream = Util.getResourceAsStream("resource/server_ks.jks");
+		SSLContextUtil.createDefaultSSLContext(keyStream, "123456");
 
-		String json = Util.readTextFile(Util.getLocation("resource/server.json"));
+		String json = Util.readTextFile(Util.getResourceAsStream("resource/server.json"));
 		NgdConfig config = GsonUtil.toBean(json, NgdConfig.class);
 		Ngrokd ngrokd = new Ngrokd();
 		ngrokd.setDomain(config.domain);

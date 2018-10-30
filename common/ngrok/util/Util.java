@@ -4,9 +4,9 @@
 package ngrok.util;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,35 +30,26 @@ public class Util
 		return sb.toString();
 	}
 
-	public static String getLocation(String path)
+	public static InputStream getResourceAsStream(String name)
 	{
-		String location = Util.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-		if(location.endsWith(".jar"))
-		{
-			location = location.substring(0, location.lastIndexOf("/") + 1);
-		}
-		return location + path;
+		return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
 	}
 
-	public static String readTextFile(String filePath)
+	public static String readTextFile(InputStream is)
 	{
 		StringBuilder sb = new StringBuilder();
-		File file = new File(filePath);
-		if(file.isFile())
+		try(BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8")))
 		{
-			try(BufferedReader br = new BufferedReader(new FileReader(file)))
+			int len;
+			char[] buf = new char[1024];
+			while((len = br.read(buf)) != -1)
 			{
-				int len;
-				char[] buf = new char[1024];
-				while((len = br.read(buf)) != -1)
-				{
-					sb.append(new String(buf, 0, len));
-				}
+				sb.append(new String(buf, 0, len));
 			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
 		}
 		return sb.toString();
 	}
