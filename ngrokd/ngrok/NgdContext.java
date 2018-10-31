@@ -17,12 +17,12 @@ import ngrok.model.TunnelInfo;
 
 public class NgdContext
 {
-	public String domain;
-	public String host;
+	public String domain = "";
+	public String host = "";
 	public int port = 4443;
 	public int timeout = 120000;
-	public Integer httpPort = 80;
-	public Integer httpsPort = 443;
+	public Integer httpPort;
+	public Integer httpsPort;
 	public Logger log = new LoggerImpl();// 如果没有注入日志，则使用默认日志
 
 	// client info

@@ -6,7 +6,7 @@ public class NgdConfig
 	public String host = "";
 	public int port = 4443;
 	public int timeout = 120000;
-	public Integer httpPort = 80;
-	public Integer httpsPort = 443;
+	public Integer httpPort;
+	public Integer httpsPort;
 	public boolean enableLog = true;
 }
