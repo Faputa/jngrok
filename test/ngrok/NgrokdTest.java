@@ -2,8 +2,8 @@ package ngrok;
 
 import java.io.InputStream;
 
+import ngrok.util.FileUtil;
 import ngrok.util.SSLContextUtil;
-import ngrok.util.Util;
 
 public class NgrokdTest
 {
@@ -11,7 +11,7 @@ public class NgrokdTest
 	{
 //		System.setProperty("javax.net.ssl.keyStore", Util.getLocation("resource/server_ks.jks"));
 //		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
-		InputStream keyStream = Util.getResourceAsStream("resource/server_ks.jks");
+		InputStream keyStream = FileUtil.getFileStream("classpath:resource/server_ks.jks");
 		SSLContextUtil.createDefaultSSLContext(keyStream, "123456");
 
 		Ngrokd ngrokd = new Ngrokd();

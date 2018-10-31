@@ -8,8 +8,8 @@ import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
 import ngrok.model.Tunnel;
 import ngrok.socket.SocketHelper;
+import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
-import ngrok.util.Util;
 
 public class Ngrok
 {
@@ -63,7 +63,7 @@ public class Ngrok
 
 	public static void main(String[] args)
 	{
-		String json = Util.readTextFile(Util.getResourceAsStream("resource/client.json"));
+		String json = FileUtil.readTextFile("classpath:resource/client.json");
 		NgConfig config = GsonUtil.toBean(json, NgConfig.class);
 		Ngrok ngrok = new Ngrok();
 		ngrok.setTunnelList(config.tunnelList);

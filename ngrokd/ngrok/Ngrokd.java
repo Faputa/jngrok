@@ -7,9 +7,9 @@ import ngrok.listener.HttpListener;
 import ngrok.listener.HttpsListener;
 import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
+import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
 import ngrok.util.SSLContextUtil;
-import ngrok.util.Util;
 
 public class Ngrokd
 {
@@ -93,10 +93,10 @@ public class Ngrokd
 
 	public static void main(String[] args) throws Exception
 	{
-		InputStream keyStream = Util.getResourceAsStream("resource/server_ks.jks");
+		InputStream keyStream = FileUtil.getFileStream("classpath:resource/server_ks.jks");
 		SSLContextUtil.createDefaultSSLContext(keyStream, "123456");
 
-		String json = Util.readTextFile(Util.getResourceAsStream("resource/server.json"));
+		String json = FileUtil.readTextFile("classpath:resource/server.json");
 		NgdConfig config = GsonUtil.toBean(json, NgdConfig.class);
 		Ngrokd ngrokd = new Ngrokd();
 		ngrokd.setDomain(config.domain);
