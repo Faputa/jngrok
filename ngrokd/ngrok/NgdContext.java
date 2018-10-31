@@ -20,12 +20,10 @@ public class NgdContext
 	public String domain;
 	public String host;
 	public int port = 4443;
-	public int httpPort = 80;
-	public int httpsPort = 443;
 	public int timeout = 120000;
+	public Integer httpPort = 80;
+	public Integer httpsPort = 443;
 	public Logger log = new LoggerImpl();// 如果没有注入日志，则使用默认日志
-	public boolean enableHttp = true;
-	public boolean enableHttps = true;
 
 	// client info
 	private Map<String, BlockingQueue<OuterLink>> outerLinkQueueMap = new ConcurrentHashMap<>();

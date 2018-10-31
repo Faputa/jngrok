@@ -2,8 +2,8 @@
 	"domain":"myngrok.com",
 	"host":"",
 	"port":4443,
+	"timeout":120000,
 	"httpPort":80,
 	"httpsPort":443,
-	"timeout":120000,
 	"enableLog":true
 }

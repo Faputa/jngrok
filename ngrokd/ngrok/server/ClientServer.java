@@ -109,25 +109,31 @@ public class ClientServer implements Runnable
 							protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.domain;
 						}
 						String url = protocol.Payload.Protocol + "://" + protocol.Payload.Hostname;
-						if("http".equals(protocol.Payload.Protocol) && context.httpPort != 80)
+						if("http".equals(protocol.Payload.Protocol))
 						{
-							url += ":" + context.httpPort;
+							if(context.httpPort == null)
+							{
+								String error = "The http tunnel " + url + " is registration failed, becase http is disabled.";
+								SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
+								break;
+							}
+							if(context.httpPort != 80)
+							{
+								url += ":" + context.httpPort;
+							}
 						}
-						else if("https".equals(protocol.Payload.Protocol) && context.httpsPort != 443)
+						else if("https".equals(protocol.Payload.Protocol))
 						{
-							url += ":" + context.httpsPort;
-						}
-						if(!context.enableHttp && "http".equals(protocol.Payload.Protocol))
-						{
-							String error = "The tunnel " + url + " is registration failed, becase http is disabled.";
-							SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
-							break;
-						}
-						if(!context.enableHttps  && "https".equals(protocol.Payload.Protocol))
-						{
-							String error = "The tunnel " + url + " is registration failed, becase https is disabled.";
-							SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
-							break;
+							if(context.httpsPort == null)
+							{
+								String error = "The https tunnel " + url + " is registration failed, becase https is disabled.";
+								SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
+								break;
+							}
+							if(context.httpsPort != 443)
+							{
+								url += ":" + context.httpsPort;
+							}
 						}
 						TunnelInfo tunnel = new TunnelInfo();
 						tunnel.setClientId(clientId);

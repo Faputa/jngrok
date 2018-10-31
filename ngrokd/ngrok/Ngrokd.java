@@ -50,16 +50,6 @@ public class Ngrokd
 		context.log = log;
 	}
 
-	public void setEnableHttp(boolean enableHttp)
-	{
-		context.enableHttp = enableHttp;
-	}
-
-	public void setEnableHttps(boolean enableHttps)
-	{
-		context.enableHttps = enableHttps;
-	}
-
 	public void start()
 	{
 		try
@@ -67,13 +57,13 @@ public class Ngrokd
 			Thread clientListenerThread = new Thread(new ClientListener(context));
 			clientListenerThread.setDaemon(true);
 			clientListenerThread.start();
-			if(context.enableHttp)
+			if(context.httpPort != null)
 			{
 				Thread httpListenerThread = new Thread(new HttpListener(context));
 				httpListenerThread.setDaemon(true);
 				httpListenerThread.start();
 			}
-			if(context.enableHttps)
+			if(context.httpsPort != null)
 			{
 				Thread httpsListenerThread = new Thread(new HttpsListener(context));
 				httpsListenerThread.setDaemon(true);
@@ -105,8 +95,6 @@ public class Ngrokd
 		ngrokd.setTimeout(config.timeout);
 		ngrokd.setHttpPort(config.httpPort);
 		ngrokd.setHttpsPort(config.httpsPort);
-		ngrokd.setEnableHttp(config.enableHttp);
-		ngrokd.setEnableHttps(config.enableHttps);
 		ngrokd.setLog(new LoggerImpl().setEnableLog(config.enableLog));
 		ngrokd.start();
 	}
