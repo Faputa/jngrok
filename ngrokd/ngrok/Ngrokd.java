@@ -25,12 +25,12 @@ public class Ngrokd
 		context.host = host;
 	}
 
-	public void setHttpPort(int port)
+	public void setHttpPort(Integer port)
 	{
 		context.httpPort = port;
 	}
 
-	public void setHttpsPort(int port)
+	public void setHttpsPort(Integer port)
 	{
 		context.httpsPort = port;
 	}
