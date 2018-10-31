@@ -26,8 +26,8 @@ public class ProxyConnect implements Runnable
 	{
 		this.socket = socket;
 		this.clientId = clientId;
-		this.tunnelList = context.getTunnelList();
-		this.log = context.getLog();
+		this.tunnelList = context.tunnelList;
+		this.log = context.log;
 	}
 
 	@Override

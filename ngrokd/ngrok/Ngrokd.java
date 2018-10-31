@@ -1,7 +1,5 @@
 package ngrok;
 
-import java.io.InputStream;
-
 import ngrok.listener.ClientListener;
 import ngrok.listener.HttpListener;
 import ngrok.listener.HttpsListener;
@@ -45,6 +43,11 @@ public class Ngrokd
 		context.timeout = timeout;
 	}
 
+	public void setAuthToken(String authToken)
+	{
+		context.authToken = authToken;
+	}
+
 	public void setLog(Logger log)
 	{
 		context.log = log;
@@ -83,11 +86,11 @@ public class Ngrokd
 
 	public static void main(String[] args) throws Exception
 	{
-		InputStream keyStream = FileUtil.getFileStream("classpath:resource/server_ks.jks");
-		SSLContextUtil.createDefaultSSLContext(keyStream, "123456");
-
-		String json = FileUtil.readTextFile("classpath:resource/server.json");
+		String json = FileUtil.readTextFile("classpath:server.json");
 		NgdConfig config = GsonUtil.toBean(json, NgdConfig.class);
+
+		SSLContextUtil.createDefaultSSLContext(FileUtil.getFileStream(config.sslKeyStore), config.sslKeyStorePassword);
+
 		Ngrokd ngrokd = new Ngrokd();
 		ngrokd.setDomain(config.domain);
 		ngrokd.setHost(config.host);
@@ -95,6 +98,7 @@ public class Ngrokd
 		ngrokd.setTimeout(config.timeout);
 		ngrokd.setHttpPort(config.httpPort);
 		ngrokd.setHttpsPort(config.httpsPort);
+		ngrokd.setAuthToken(config.authToken);
 		ngrokd.setLog(new LoggerImpl().setEnableLog(config.enableLog));
 		ngrokd.start();
 	}

@@ -51,9 +51,15 @@ public class ClientServer implements Runnable
 				Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
 				if("Auth".equals(protocol.Type))
 				{
+					if(context.authToken != null && !context.authToken.equals(protocol.Payload.AuthToken))
+					{
+						SocketHelper.sendpack(socket, NgdMsg.AuthResp(null, "Auth token check failure"));
+						log.log("客户端认证失败：" + msg);
+						return;
+					}
 					clientId = Util.MD5(String.valueOf(System.currentTimeMillis()));
 					context.initClientInfo(clientId, socket);
-					SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId));
+					SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId, null));
 					SocketHelper.sendpack(socket, NgdMsg.ReqProxy());
 				}
 				else if("RegProxy".equals(protocol.Type))

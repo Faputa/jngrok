@@ -9,13 +9,13 @@ public class NgdMsg
 	{
 	}
 
-	public static String AuthResp(String ClientId)
+	public static String AuthResp(String ClientId, String Error)
 	{
 		Payload payload = new Payload();
 		payload.ClientId = ClientId;
 		payload.Version = "2";
 		payload.MmVersion = "1.7";
-		payload.Error = "";
+		payload.Error = Error;
 		Protocol protocol = new Protocol();
 		protocol.Type = "AuthResp";
 		protocol.Payload = payload;

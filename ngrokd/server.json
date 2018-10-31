@@ -1,0 +1,12 @@
+{
+	"sslKeyStore":"classpath:server_ks.jks",
+	"sslKeyStorePassword":"123456",
+	"domain":"myngrok.com",
+	"host":"",
+	"port":4443,
+	"timeout":120000,
+	"httpPort":80,
+	"httpsPort":443,
+	"authToken":"CMwClAfRttJtFJgo4jYh4PJ4giR8uJxhdkfcjOB1",
+	"enableLog":true
+}

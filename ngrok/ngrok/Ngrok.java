@@ -14,27 +14,31 @@ import ngrok.util.GsonUtil;
 public class Ngrok
 {
 	private NgContext context = new NgContext();
-	private Logger log = context.getLog();
 	private long pingTime = 10000;// 心跳包周期默认为10秒
 
 	public void setServerHost(String serverHost)
 	{
-		context.setServerHost(serverHost);
+		context.serverHost = serverHost;
 	}
 
 	public void setServerPort(int serverPort)
 	{
-		context.setServerPort(serverPort);
+		context.serverPort = serverPort;
 	}
 
 	public void setTunnelList(List<Tunnel> tunnelList)
 	{
-		context.setTunnelList(tunnelList);
+		context.tunnelList = tunnelList;
+	}
+
+	public void setAuthToken(String authToken)
+	{
+		context.authToken = authToken;
 	}
 
 	public void setLog(Logger log)
 	{
-		context.setLog(log);
+		context.log = log;
 	}
 	
 	public void setPingTime(long pingTime)
@@ -44,7 +48,7 @@ public class Ngrok
 
 	public void start()
 	{
-		try(Socket socket = SocketHelper.newSSLSocket(context.getServerHost(), context.getServerPort()))
+		try(Socket socket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort))
 		{
 			Thread thread = new Thread(new ControlConnect(socket, context));
 			thread.setDaemon(true);
@@ -57,19 +61,20 @@ public class Ngrok
 		}
 		catch(Exception e)
 		{
-			log.err(e.toString());
+			context.log.err(e.toString());
 		}
 	}
 
 	public static void main(String[] args)
 	{
-		String json = FileUtil.readTextFile("classpath:resource/client.json");
+		String json = FileUtil.readTextFile("classpath:client.json");
 		NgConfig config = GsonUtil.toBean(json, NgConfig.class);
 		Ngrok ngrok = new Ngrok();
 		ngrok.setTunnelList(config.tunnelList);
 		ngrok.setServerHost(config.serverHost);
 		ngrok.setServerPort(config.serverPort);
 		ngrok.setPingTime(config.pingTime);
+		ngrok.setAuthToken(config.authToken);
 		ngrok.setLog(new LoggerImpl().setEnableLog(config.enableLog));
 		ngrok.start();
 	}

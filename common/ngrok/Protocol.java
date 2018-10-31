@@ -22,6 +22,9 @@ public class Protocol
 		public String Error;
 		public String Url;
 		public String ClientAddr;
+
+		// 扩展字段，增加token校验功能
+		public String AuthToken;
 	}
 
 	public String Type;

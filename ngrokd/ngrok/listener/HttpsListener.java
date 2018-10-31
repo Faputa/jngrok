@@ -39,7 +39,7 @@ public class HttpsListener implements Runnable
 		}
 		catch(IOException e)
 		{
-			log.log("监听退出：[%s:%s]", context.host, context.httpsPort);
+			log.err(e.toString());
 		}
 	}
 }

@@ -25,7 +25,7 @@ public class ControlConnect implements Runnable
 	{
 		this.socket = socket;
 		this.context = context;
-		this.log = context.getLog();
+		this.log = context.log;
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class ControlConnect implements Runnable
 		try(Socket socket = this.socket)
 		{
 			String clientId = null;
-			SocketHelper.sendpack(socket, NgMsg.Auth());
+			SocketHelper.sendpack(socket, NgMsg.Auth(context.authToken));
 			PacketReader pr = new PacketReader(socket);
 			while(true)
 			{
@@ -49,7 +49,7 @@ public class ControlConnect implements Runnable
 				{
 					try
 					{
-						Socket remoteSocket = SocketHelper.newSSLSocket(context.getServerHost(), context.getServerPort());
+						Socket remoteSocket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
 						Thread thread = new Thread(new ProxyConnect(remoteSocket, clientId, context));
 						thread.setDaemon(true);
 						thread.start();
@@ -73,11 +73,19 @@ public class ControlConnect implements Runnable
 				}
 				else if("AuthResp".equals(protocol.Type))
 				{
-					clientId = protocol.Payload.ClientId;
-					SocketHelper.sendpack(socket, NgMsg.Ping());
-					for(Tunnel tunnel : context.getTunnelList())
+					if(protocol.Payload.Error == null || "".equals(protocol.Payload.Error))
 					{
-						SocketHelper.sendpack(socket, NgMsg.ReqTunnel(tunnel));
+						clientId = protocol.Payload.ClientId;
+						SocketHelper.sendpack(socket, NgMsg.Ping());
+						for(Tunnel tunnel : context.tunnelList)
+						{
+							SocketHelper.sendpack(socket, NgMsg.ReqTunnel(tunnel));
+						}
+					}
+					else
+					{
+						log.err("客户端认证失败：" + protocol.Payload.Error);
+						return;
 					}
 				}
 			}

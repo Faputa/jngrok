@@ -11,7 +11,7 @@ public class NgMsg
 	{
 	}
 
-	public static String Auth()
+	public static String Auth(String AuthToken)
 	{
 		Payload payload = new Payload();
 		payload.ClientId = "";
@@ -21,6 +21,7 @@ public class NgMsg
 		payload.MmVersion = "1.7";
 		payload.User = "user";
 		payload.Password = "";
+		payload.AuthToken = AuthToken;
 		Protocol protocol = new Protocol();
 		protocol.Type = "Auth";
 		protocol.Payload = payload;
