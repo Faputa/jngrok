@@ -68,7 +68,7 @@ public class ClientServer implements Runnable
 					OuterLink link = queue.poll(60, TimeUnit.SECONDS);
 					if(link == null)
 					{
-						// 代理连接超时，重新发起代理连接
+						// 队列超时，重新发起代理连接
 						SocketHelper.sendpack(context.getControlSocket(_clientId), NgdMsg.ReqProxy());
 						break;
 					}
