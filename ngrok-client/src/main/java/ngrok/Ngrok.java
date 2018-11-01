@@ -10,6 +10,7 @@ import ngrok.model.Tunnel;
 import ngrok.socket.SocketHelper;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
+import ngrok.util.Util;
 
 public class Ngrok {
 
@@ -45,12 +46,19 @@ public class Ngrok {
             Thread thread = new Thread(new ControlConnect(socket, context));
             thread.setDaemon(true);
             thread.start();
+
+            long lastTime = System.currentTimeMillis();
             while (true) {
-                try {
-                    Thread.sleep(this.pingTime);
-                } catch (InterruptedException e) {
+                Util.sleep(1000);
+                if (context.getAuthOk() == null) {
+                    break;
                 }
-                SocketHelper.sendpack(socket, NgMsg.Ping());
+                if (context.getAuthOk()) {
+                    if (System.currentTimeMillis() > lastTime + pingTime) {
+                        SocketHelper.sendpack(socket, NgMsg.Ping());
+                        lastTime = System.currentTimeMillis();
+                    }
+                }
             }
         } catch (Exception e) {
             context.log.err(e.toString());

@@ -47,4 +47,11 @@ public class Util {
     public static String getTime() {
         return getTime("yyyy-MM-dd HH:mm:ss");
     }
+
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+        }
+    }
 }

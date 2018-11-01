@@ -8,6 +8,7 @@ import ngrok.log.LoggerImpl;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
 import ngrok.util.SSLContextUtil;
+import ngrok.util.Util;
 
 public class Ngrokd {
 
@@ -60,11 +61,9 @@ public class Ngrokd {
                 httpsListenerThread.setDaemon(true);
                 httpsListenerThread.start();
             }
+
             while (true) {
-                try {
-                    Thread.sleep(50000);
-                } catch (InterruptedException e) {
-                }
+                Util.sleep(50000);
                 context.closeIdleClient();
             }
         } catch (Exception e) {

@@ -14,6 +14,7 @@ import ngrok.model.Tunnel;
 import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
 import ngrok.util.GsonUtil;
+import ngrok.util.Util;
 
 public class ControlConnect implements Runnable {
 
@@ -40,6 +41,7 @@ public class ControlConnect implements Runnable {
                 }
                 log.log("收到服务器信息：" + msg);
                 Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
+
                 if ("ReqProxy".equals(protocol.Type)) {
                     try {
                         Socket remoteSocket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
@@ -54,15 +56,12 @@ public class ControlConnect implements Runnable {
                         log.log("管道注册成功：" + protocol.Payload.Url);
                     } else {
                         log.err("管道注册失败：" + protocol.Payload.Error);
-                        try {
-                            Thread.sleep(30);
-                        } catch (InterruptedException e) {
-                        }
+                        Util.sleep(30);
                     }
                 } else if ("AuthResp".equals(protocol.Type)) {
                     if (protocol.Payload.Error == null || "".equals(protocol.Payload.Error)) {
                         clientId = protocol.Payload.ClientId;
-                        SocketHelper.sendpack(socket, NgMsg.Ping());
+                        context.setAuthOk(true);
                         for (Tunnel tunnel : context.tunnelList) {
                             SocketHelper.sendpack(socket, NgMsg.ReqTunnel(tunnel));
                         }
@@ -74,6 +73,8 @@ public class ControlConnect implements Runnable {
             }
         } catch (IOException e) {
             log.err(e.toString());
+        } finally {
+            context.setAuthOk(null);
         }
     }
 }

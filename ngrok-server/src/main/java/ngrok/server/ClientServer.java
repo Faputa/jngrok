@@ -48,15 +48,15 @@ public class ClientServer implements Runnable {
                 if ("Auth".equals(protocol.Type)) {
                     if (context.authToken != null && !context.authToken.equals(protocol.Payload.AuthToken)) {
                         SocketHelper.sendpack(socket, NgdMsg.AuthResp(null, "Auth token check failure"));
-                        log.log("客户端认证失败：" + msg);
                         return;
                     }
                     clientId = Util.MD5(String.valueOf(System.currentTimeMillis()));
                     context.initClientInfo(clientId, socket);
                     SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId, null));
                     SocketHelper.sendpack(socket, NgdMsg.ReqProxy());
-
-                } else if ("RegProxy".equals(protocol.Type)) {
+                    continue;
+                }
+                if ("RegProxy".equals(protocol.Type)) {
                     String _clientId = protocol.Payload.ClientId;
                     BlockingQueue<OuterLink> queue = context.getOuterLinkQueue(_clientId);
                     if (queue == null) {
@@ -85,9 +85,14 @@ public class ClientServer implements Runnable {
                     } catch (Exception e) {
                     }
                     break;
+                }
 
-                } else if ("ReqTunnel".equals(protocol.Type)) {
+                if (clientId == null) {
+                    SocketHelper.sendpack(socket, NgdMsg.Message("Please authenticate the client first"));
+                    return;
+                }
 
+                if ("ReqTunnel".equals(protocol.Type)) {
                     if ("http".equals(protocol.Payload.Protocol) || "https".equals(protocol.Payload.Protocol)) {
                         if (protocol.Payload.Hostname == null || protocol.Payload.Hostname.length() == 0) {
                             if (protocol.Payload.Subdomain == null || protocol.Payload.Subdomain.length() == 0) {

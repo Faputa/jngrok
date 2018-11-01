@@ -3,6 +3,8 @@ package ngrok;
 import ngrok.Protocol.Payload;
 import ngrok.util.GsonUtil;
 
+import java.util.HashMap;
+
 public class NgdMsg {
 
     private NgdMsg() {
@@ -55,5 +57,11 @@ public class NgdMsg {
         protocol.Type = "Pong";
         protocol.Payload = payload;
         return GsonUtil.toJson(protocol);
+    }
+
+    public static String Message(String Msg) {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("Message", Msg);
+        return GsonUtil.toJson(map);
     }
 }
