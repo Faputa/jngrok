@@ -52,22 +52,23 @@ public class ControlConnect implements Runnable {
                         log.err(e.toString());
                     }
                 } else if ("NewTunnel".equals(protocol.Type)) {
-                    if (protocol.Payload.Error == null || "".equals(protocol.Payload.Error)) {
-                        log.log("管道注册成功：" + protocol.Payload.Url);
-                    } else {
+                    if (protocol.Payload.Error != null && protocol.Payload.Error.length() > 0) {
                         log.err("管道注册失败：" + protocol.Payload.Error);
-                        Util.sleep(30);
+                        Util.sleep(3000);
+                        break;
                     }
+                    log.log("管道注册成功：" + protocol.Payload.Url);
                 } else if ("AuthResp".equals(protocol.Type)) {
-                    if (protocol.Payload.Error == null || "".equals(protocol.Payload.Error)) {
-                        clientId = protocol.Payload.ClientId;
-                        context.setAuthOk(true);
-                        for (Tunnel tunnel : context.tunnelList) {
-                            SocketHelper.sendpack(socket, NgMsg.ReqTunnel(tunnel));
-                        }
-                    } else {
+                    if (protocol.Payload.Error != null && protocol.Payload.Error.length() > 0) {
                         log.err("客户端认证失败：" + protocol.Payload.Error);
-                        return;
+                        Util.sleep(3000);
+                        break;
+                    }
+                    clientId = protocol.Payload.ClientId;
+                    context.setAuthOk(true);
+                    log.log("客户端认证成功：" + clientId);
+                    for (Tunnel tunnel : context.tunnelList) {
+                        SocketHelper.sendpack(socket, NgMsg.ReqTunnel(tunnel));
                     }
                 }
             }

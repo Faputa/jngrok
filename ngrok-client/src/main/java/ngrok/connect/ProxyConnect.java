@@ -61,7 +61,6 @@ public class ProxyConnect implements Runnable {
                             SocketHelper.forward(socket, localSocket);
                         } catch (Exception e) {
                         }
-                        break;
                     } catch (Exception e) {
                         log.err("本地连接建立失败：[host]=%s [port]=%s", tunnel.getLocalHost(), tunnel.getLocalPort());
                         String html = "<html><body style=\"background-color: #97a8b9\"><div style=\"margin:auto; width:400px;padding: 20px 60px; background-color: #D3D3D3; border: 5px solid maroon;\"><h2>Tunnel ";
@@ -74,8 +73,8 @@ public class ProxyConnect implements Runnable {
                         header += "Content-Length: " + html.getBytes().length;
                         header += "\r\n\r\n" + html;
                         SocketHelper.sendbuf(socket, header.getBytes());
-                        break;
                     }
+                    break;
                 }
             }
         } catch (Exception e) {
