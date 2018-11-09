@@ -31,7 +31,7 @@ public class NgdContext {
     private Map<String, Socket> controlSocketMap = new ConcurrentHashMap<>();
 
     public void initClientInfo(String clientId, Socket controlSocket) {
-        outerLinkQueueMap.put(clientId, new LinkedBlockingQueue<OuterLink>());
+        outerLinkQueueMap.put(clientId, new LinkedBlockingQueue<>());
         controlSocketMap.put(clientId, controlSocket);
     }
 
@@ -56,7 +56,7 @@ public class NgdContext {
     }
 
     // tunnel info
-    private Map<String, TunnelInfo> tunnelInfoMap = new ConcurrentHashMap<String, TunnelInfo>();
+    private Map<String, TunnelInfo> tunnelInfoMap = new ConcurrentHashMap<>();
 
     public TunnelInfo getTunnelInfo(String url) {
         return tunnelInfoMap.get(url);

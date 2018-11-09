@@ -8,7 +8,7 @@ import ngrok.model.Tunnel;
 public class NgrokTest {
 
     public static void main(String[] args) {
-        List<Tunnel> list = new ArrayList<Tunnel>();
+        List<Tunnel> list = new ArrayList<>();
 
         Tunnel t1 = new Tunnel();
         t1.setProtocol("http");

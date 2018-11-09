@@ -46,7 +46,7 @@ public class SocketHelper {
     public static void sendpack(Socket socket, String msg) throws IOException {
         OutputStream os = socket.getOutputStream();
         byte[] bs = msg.getBytes();
-        os.write(ByteUtil.concat(ByteUtil.packInt(bs.length), bs));
+        os.write(ByteUtil.concat(ByteUtil.encodeInt(bs.length), bs));
         os.flush();
     }
 
@@ -67,12 +67,12 @@ public class SocketHelper {
     }
 
     public static Map<String, String> readHttpHead(Socket socket) throws IOException {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         InputStream is = socket.getInputStream();
         BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         String line;
         while ((line = br.readLine()) != null) {
-            if ("".equals(line)) {
+            if (line.isEmpty()) {
                 break;
             }
             String[] ss = line.split(": ");
@@ -86,12 +86,12 @@ public class SocketHelper {
     }
 
     public static Map<String, String> readHttpHead(byte[] buf) throws IOException {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         InputStream is = new ByteArrayInputStream(buf);
         BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         String line;
         while ((line = br.readLine()) != null) {
-            if ("".equals(line)) {
+            if (line.isEmpty()) {
                 return map;
             }
             String[] ss = line.split(": ");

@@ -21,7 +21,7 @@ public class ByteUtil {
         return sb.toString();
     }
 
-    public static byte[] packInt(int x) {
+    public static byte[] encodeInt(int x) {
         ByteBuffer buf = ByteBuffer.allocate(8);
         buf.order(ByteOrder.LITTLE_ENDIAN);
         buf.putInt(x);
@@ -29,7 +29,7 @@ public class ByteUtil {
         return buf.array();
     }
 
-    public static int unpackInt(byte[] byteArr) {
+    public static int decodeInt(byte[] byteArr) {
         ByteBuffer buf = ByteBuffer.wrap(byteArr);
         buf.order(ByteOrder.LITTLE_ENDIAN);
         return buf.getInt(0);

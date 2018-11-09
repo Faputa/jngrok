@@ -24,7 +24,7 @@ public class PacketReader {
     public String read() throws IOException {
         while (true) {
             if (para.length >= 8) {
-                int size = ByteUtil.unpackInt(ByteUtil.subArr(para, 0, 8));
+                int size = ByteUtil.decodeInt(ByteUtil.subArr(para, 0, 8));
                 if (para.length >= size + 8) {
                     String str = new String(para, 8, size);
                     para = ByteUtil.subArr(para, size + 8);

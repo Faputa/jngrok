@@ -10,7 +10,7 @@ public class OuterLink {
     private String url;
     private Socket outerSocket;
     private Socket controlSocket;
-    private BlockingQueue<Socket> proxySocketQueue = new LinkedBlockingQueue<Socket>();
+    private BlockingQueue<Socket> proxySocketQueue = new LinkedBlockingQueue<>();
 
     public String getUrl() {
         return url;

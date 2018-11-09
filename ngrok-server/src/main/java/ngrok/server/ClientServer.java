@@ -94,8 +94,8 @@ public class ClientServer implements Runnable {
 
                 if ("ReqTunnel".equals(protocol.Type)) {
                     if ("http".equals(protocol.Payload.Protocol) || "https".equals(protocol.Payload.Protocol)) {
-                        if (protocol.Payload.Hostname == null || protocol.Payload.Hostname.length() == 0) {
-                            if (protocol.Payload.Subdomain == null || protocol.Payload.Subdomain.length() == 0) {
+                        if (protocol.Payload.Hostname == null || protocol.Payload.Hostname.isEmpty()) {
+                            if (protocol.Payload.Subdomain == null || protocol.Payload.Subdomain.isEmpty()) {
                                 protocol.Payload.Subdomain = Util.getRandString(5);
                             }
                             protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.domain;
