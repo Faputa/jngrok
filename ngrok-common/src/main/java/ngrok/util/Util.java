@@ -30,7 +30,7 @@ public class Util {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] bytes = md.digest(str.getBytes("utf-8"));
             for (byte b : bytes) {
-                sb.append(hexArray[(b >> 4) & 0x0F]);
+                sb.append(hexArray[(b >>> 4) & 0x0F]);
                 sb.append(hexArray[b & 0x0F]);
             }
         } catch (Exception e) {
