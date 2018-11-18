@@ -83,12 +83,12 @@ public class NgdContext {
     }
 
     public void closeIdleClient() {
-        Set<String> flagSet = new HashSet<>();
+        Set<String> clientIdSet = new HashSet<>();
         for (TunnelInfo tunnel : tunnelInfoMap.values()) {
-            flagSet.add(tunnel.getClientId());
+            clientIdSet.add(tunnel.getClientId());
         }
         for (Map.Entry<String, Socket> entry : controlSocketMap.entrySet()) {
-            if (!flagSet.contains(entry.getKey())) {
+            if (!clientIdSet.contains(entry.getKey())) {
                 try {
                     entry.getValue().close();
                 } catch (IOException e) {
