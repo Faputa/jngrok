@@ -1,7 +1,7 @@
 /**
  * 处理用户建立的http、https连接
  */
-package ngrok.server;
+package ngrok.handler;
 
 import java.net.Socket;
 import java.util.Map;
@@ -14,14 +14,14 @@ import ngrok.model.TunnelInfo;
 import ngrok.socket.SocketHelper;
 import ngrok.util.ByteUtil;
 
-public class HttpServer implements Runnable {
+public class HttpHandler implements Runnable {
 
     private Socket socket;
     private NgdContext context;
     private String protocol;
     private Logger log;
 
-    public HttpServer(Socket socket, NgdContext context, String protocol) {
+    public HttpHandler(Socket socket, NgdContext context, String protocol) {
         this.socket = socket;
         this.context = context;
         this.protocol = protocol;

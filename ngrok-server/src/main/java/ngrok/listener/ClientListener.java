@@ -9,7 +9,7 @@ import java.net.Socket;
 
 import ngrok.log.Logger;
 import ngrok.NgdContext;
-import ngrok.server.ClientServer;
+import ngrok.handler.ClientHandler;
 import ngrok.socket.SocketHelper;
 
 public class ClientListener implements Runnable {
@@ -28,7 +28,7 @@ public class ClientListener implements Runnable {
             log.log("监听建立成功：[%s:%s]", context.host, context.port);
             while (true) {
                 Socket socket = ssocket.accept();
-                Thread thread = new Thread(new ClientServer(socket, context));
+                Thread thread = new Thread(new ClientHandler(socket, context));
                 thread.setDaemon(true);
                 thread.start();
             }

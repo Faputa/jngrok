@@ -1,7 +1,7 @@
 /**
  * 处理用户建立的tcp连接
  */
-package ngrok.server;
+package ngrok.handler;
 
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
@@ -12,13 +12,13 @@ import ngrok.model.OuterLink;
 import ngrok.model.TunnelInfo;
 import ngrok.socket.SocketHelper;
 
-public class TcpServer implements Runnable {
+public class TcpHandler implements Runnable {
 
     private Socket socket;
     private NgdContext context;
     private Logger log;
 
-    public TcpServer(Socket socket, NgdContext context) {
+    public TcpHandler(Socket socket, NgdContext context) {
         this.socket = socket;
         this.context = context;
         this.log = context.log;

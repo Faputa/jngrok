@@ -8,7 +8,7 @@ import java.net.Socket;
 
 import ngrok.NgdContext;
 import ngrok.log.Logger;
-import ngrok.server.TcpServer;
+import ngrok.handler.TcpHandler;
 
 public class TcpListener implements Runnable {
 
@@ -28,7 +28,7 @@ public class TcpListener implements Runnable {
             log.log("监听建立成功：[%s:%s]", context.host, ssocket.getLocalPort());
             while (true) {
                 Socket socket = ssocket.accept();
-                Thread thread = new Thread(new TcpServer(socket, context));
+                Thread thread = new Thread(new TcpHandler(socket, context));
                 thread.setDaemon(true);
                 thread.start();
             }
