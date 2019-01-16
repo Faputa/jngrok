@@ -66,7 +66,8 @@ public class Ngrok {
     }
 
     public static void main(String[] args) {
-        String json = FileUtil.readTextFile("classpath:client.json");
+        String filename = args.length > 0 ? args[0] : "client.json";
+        String json = FileUtil.readTextFile("classpath:" + filename);
         NgConfig config = GsonUtil.toBean(json, NgConfig.class);
         Ngrok ngrok = new Ngrok();
         ngrok.setTunnelList(config.tunnelList);

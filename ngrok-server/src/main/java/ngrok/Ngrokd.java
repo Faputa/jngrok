@@ -72,7 +72,8 @@ public class Ngrokd {
     }
 
     public static void main(String[] args) throws Exception {
-        String json = FileUtil.readTextFile("classpath:server.json");
+        String filename = args.length > 0 ? args[0] : "server.json";
+        String json = FileUtil.readTextFile("classpath:" + filename);
         NgdConfig config = GsonUtil.toBean(json, NgdConfig.class);
 
         SSLContextUtil.createDefaultSSLContext(FileUtil.getFileStream(config.sslKeyStore), config.sslKeyStorePassword);
