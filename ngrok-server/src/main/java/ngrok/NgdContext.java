@@ -1,5 +1,10 @@
 package ngrok;
 
+import ngrok.log.Logger;
+import ngrok.log.LoggerImpl;
+import ngrok.model.OuterLink;
+import ngrok.model.TunnelInfo;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
@@ -9,11 +14,6 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import ngrok.log.Logger;
-import ngrok.log.LoggerImpl;
-import ngrok.model.OuterLink;
-import ngrok.model.TunnelInfo;
 
 public class NgdContext {
 

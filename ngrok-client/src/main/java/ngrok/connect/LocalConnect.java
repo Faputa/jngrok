@@ -3,9 +3,9 @@
  */
 package ngrok.connect;
 
-import java.net.Socket;
-
 import ngrok.socket.SocketHelper;
+
+import java.net.Socket;
 
 public class LocalConnect implements Runnable {
 

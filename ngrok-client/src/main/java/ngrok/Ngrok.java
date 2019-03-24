@@ -1,8 +1,5 @@
 package ngrok;
 
-import java.net.Socket;
-import java.util.List;
-
 import ngrok.connect.ControlConnect;
 import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
@@ -11,6 +8,9 @@ import ngrok.socket.SocketHelper;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
 import ngrok.util.Util;
+
+import java.net.Socket;
+import java.util.List;
 
 public class Ngrok {
 
@@ -65,7 +65,7 @@ public class Ngrok {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String filename = args.length > 0 ? args[0] : "client.json";
         String json = FileUtil.readTextFile("classpath:" + filename);
         NgConfig config = GsonUtil.toBean(json, NgConfig.class);

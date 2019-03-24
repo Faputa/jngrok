@@ -1,9 +1,9 @@
 package ngrok;
 
+import ngrok.model.Tunnel;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import ngrok.model.Tunnel;
 
 public class NgrokTest {
 

@@ -3,12 +3,12 @@
  */
 package ngrok.listener;
 
+import ngrok.NgdContext;
+import ngrok.handler.TcpHandler;
+import ngrok.log.Logger;
+
 import java.net.ServerSocket;
 import java.net.Socket;
-
-import ngrok.NgdContext;
-import ngrok.log.Logger;
-import ngrok.handler.TcpHandler;
 
 public class TcpListener implements Runnable {
 

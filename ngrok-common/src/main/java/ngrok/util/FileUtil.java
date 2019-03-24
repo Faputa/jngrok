@@ -1,11 +1,7 @@
 package ngrok.util;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class FileUtil {
 
@@ -23,21 +19,18 @@ public class FileUtil {
         }
     }
 
-    public static String readTextStream(InputStream is) {
+    public static String readTextStream(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
-            int len;
-            char[] buf = new char[1024];
-            while ((len = br.read(buf)) != -1) {
-                sb.append(new String(buf, 0, len));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        int len;
+        char[] buf = new char[1024];
+        while ((len = br.read(buf)) != -1) {
+            sb.append(new String(buf, 0, len));
         }
         return sb.toString();
     }
 
-    public static String readTextFile(String name) {
+    public static String readTextFile(String name) throws IOException {
         return readTextStream(getFileStream(name));
     }
 }

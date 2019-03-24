@@ -3,16 +3,16 @@
  */
 package ngrok.handler;
 
-import java.net.Socket;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import ngrok.log.Logger;
 import ngrok.NgdContext;
+import ngrok.log.Logger;
 import ngrok.model.OuterLink;
 import ngrok.model.TunnelInfo;
 import ngrok.socket.SocketHelper;
 import ngrok.util.ByteUtil;
+
+import java.net.Socket;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class HttpHandler implements Runnable {
 

@@ -1,11 +1,11 @@
 package ngrok.socket;
 
+import ngrok.util.ByteUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
-
-import ngrok.util.ByteUtil;
 
 public class PacketReader {
 

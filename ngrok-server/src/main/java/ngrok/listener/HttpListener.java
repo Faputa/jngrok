@@ -3,14 +3,14 @@
  */
 package ngrok.listener;
 
+import ngrok.NgdContext;
+import ngrok.handler.HttpHandler;
+import ngrok.log.Logger;
+import ngrok.socket.SocketHelper;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
-import ngrok.log.Logger;
-import ngrok.NgdContext;
-import ngrok.handler.HttpHandler;
-import ngrok.socket.SocketHelper;
 
 public class HttpListener implements Runnable {
 

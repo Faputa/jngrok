@@ -3,14 +3,14 @@
  */
 package ngrok.handler;
 
-import java.net.Socket;
-import java.util.concurrent.TimeUnit;
-
-import ngrok.log.Logger;
 import ngrok.NgdContext;
+import ngrok.log.Logger;
 import ngrok.model.OuterLink;
 import ngrok.model.TunnelInfo;
 import ngrok.socket.SocketHelper;
+
+import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 public class TcpHandler implements Runnable {
 

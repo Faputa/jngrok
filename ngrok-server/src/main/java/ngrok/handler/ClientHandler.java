@@ -3,11 +3,6 @@
  */
 package ngrok.handler;
 
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
 import ngrok.NgdContext;
 import ngrok.NgdMsg;
 import ngrok.Protocol;
@@ -19,6 +14,11 @@ import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
 import ngrok.util.GsonUtil;
 import ngrok.util.Util;
+
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class ClientHandler implements Runnable {
 

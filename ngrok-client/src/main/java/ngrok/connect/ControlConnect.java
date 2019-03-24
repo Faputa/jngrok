@@ -3,9 +3,6 @@
  */
 package ngrok.connect;
 
-import java.io.IOException;
-import java.net.Socket;
-
 import ngrok.NgContext;
 import ngrok.NgMsg;
 import ngrok.Protocol;
@@ -15,6 +12,9 @@ import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
 import ngrok.util.GsonUtil;
 import ngrok.util.Util;
+
+import java.io.IOException;
+import java.net.Socket;
 
 public class ControlConnect implements Runnable {
 

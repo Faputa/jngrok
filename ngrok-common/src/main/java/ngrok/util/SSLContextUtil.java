@@ -1,13 +1,8 @@
 package ngrok.util;
 
+import javax.net.ssl.*;
 import java.io.InputStream;
 import java.security.KeyStore;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 
 public class SSLContextUtil {
 

@@ -3,9 +3,6 @@
  */
 package ngrok.connect;
 
-import java.net.Socket;
-import java.util.List;
-
 import ngrok.NgContext;
 import ngrok.NgMsg;
 import ngrok.Protocol;
@@ -14,6 +11,9 @@ import ngrok.model.Tunnel;
 import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
 import ngrok.util.GsonUtil;
+
+import java.net.Socket;
+import java.util.List;
 
 public class ProxyConnect implements Runnable {
 

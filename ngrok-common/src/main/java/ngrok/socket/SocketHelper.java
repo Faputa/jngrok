@@ -1,22 +1,17 @@
 package ngrok.socket;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import ngrok.util.ByteUtil;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
-
-import ngrok.util.ByteUtil;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SocketHelper {
 
@@ -69,7 +64,7 @@ public class SocketHelper {
     public static Map<String, String> readHttpHead(Socket socket) throws IOException {
         Map<String, String> map = new HashMap<>();
         InputStream is = socket.getInputStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String line;
         while ((line = br.readLine()) != null) {
             if (line.isEmpty()) {
@@ -88,7 +83,7 @@ public class SocketHelper {
     public static Map<String, String> readHttpHead(byte[] buf) throws IOException {
         Map<String, String> map = new HashMap<>();
         InputStream is = new ByteArrayInputStream(buf);
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String line;
         while ((line = br.readLine()) != null) {
             if (line.isEmpty()) {

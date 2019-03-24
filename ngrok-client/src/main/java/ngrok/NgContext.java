@@ -1,10 +1,10 @@
 package ngrok;
 
-import java.util.List;
-
 import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
 import ngrok.model.Tunnel;
+
+import java.util.List;
 
 public class NgContext {
 

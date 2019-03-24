@@ -3,6 +3,7 @@
  */
 package ngrok.util;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,7 +29,7 @@ public class Util {
         final char[] hexArray = "0123456789ABCDEF".toCharArray();
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] bytes = md.digest(str.getBytes("utf-8"));
+            byte[] bytes = md.digest(str.getBytes(StandardCharsets.UTF_8));
             for (byte b : bytes) {
                 sb.append(hexArray[(b >>> 4) & 0x0F]);
                 sb.append(hexArray[b & 0x0F]);

@@ -4,12 +4,7 @@
  */
 package ngrok.socket;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
