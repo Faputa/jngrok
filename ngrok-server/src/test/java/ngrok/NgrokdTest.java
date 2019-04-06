@@ -6,7 +6,7 @@ import ngrok.util.SSLContextUtil;
 public class NgrokdTest {
 
     public static void main(String[] args) throws Exception {
-//		System.setProperty("javax.net.ssl.keyStore", Util.getLocation("server_ks.jks"));
+//		System.setProperty("javax.net.ssl.keyStore", ToolUtil.getLocation("server_ks.jks"));
 //		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
         SSLContextUtil.createDefaultSSLContext(FileUtil.getFileStream("classpath:server_ks.jks"), "123456");
 

@@ -15,17 +15,16 @@ import java.net.Socket;
 public class HttpListener implements Runnable {
 
     private NgdContext context;
-    private Logger log;
+    private Logger log = Logger.getLogger();
 
     public HttpListener(NgdContext context) {
         this.context = context;
-        this.log = context.log;
     }
 
     @Override
     public void run() {
         try (ServerSocket ssocket = SocketHelper.newServerSocket(context.httpPort)) {
-            log.log("监听建立成功：[%s:%s]", context.host, context.httpPort);
+            log.info("监听建立成功：[%s:%s]", context.host, context.httpPort);
             while (true) {
                 Socket socket = ssocket.accept();
                 Thread thread = new Thread(new HttpHandler(socket, context, "http"));

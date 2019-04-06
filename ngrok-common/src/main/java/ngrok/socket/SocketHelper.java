@@ -38,6 +38,26 @@ public class SocketHelper {
         return ssocket;
     }
 
+    public static void safeClose(Socket socket) {
+        if (socket == null) {
+            return;
+        }
+        try {
+            socket.close();
+        } catch (IOException e) {
+        }
+    }
+
+    public static void safeClose(ServerSocket serverSocket) {
+        if (serverSocket == null) {
+            return;
+        }
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+        }
+    }
+
     public static void sendpack(Socket socket, String msg) throws IOException {
         OutputStream os = socket.getOutputStream();
         byte[] bs = msg.getBytes();
@@ -72,7 +92,7 @@ public class SocketHelper {
             }
             String[] ss = line.split(": ");
             if (ss.length == 1) {
-                //do nothing
+                // do nothing
             } else if (ss.length == 2) {
                 map.put(ss[0], ss[1]);
             }
@@ -91,7 +111,7 @@ public class SocketHelper {
             }
             String[] ss = line.split(": ");
             if (ss.length == 1) {
-                //do nothing
+                // do nothing
             } else if (ss.length == 2) {
                 map.put(ss[0], ss[1]);
             }

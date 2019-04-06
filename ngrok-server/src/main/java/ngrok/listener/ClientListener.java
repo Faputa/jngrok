@@ -15,17 +15,16 @@ import java.net.Socket;
 public class ClientListener implements Runnable {
 
     private NgdContext context;
-    private Logger log;
+    private Logger log = Logger.getLogger();
 
-    public ClientListener(NgdContext context) throws IOException {
+    public ClientListener(NgdContext context) {
         this.context = context;
-        this.log = context.log;
     }
 
     @Override
     public void run() {
         try (ServerSocket ssocket = SocketHelper.newSSLServerSocket(context.port)) {
-            log.log("监听建立成功：[%s:%s]", context.host, context.port);
+            log.info("监听建立成功：[%s:%s]", context.host, context.port);
             while (true) {
                 Socket socket = ssocket.accept();
                 Thread thread = new Thread(new ClientHandler(socket, context));

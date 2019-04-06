@@ -15,17 +15,16 @@ import java.net.Socket;
 public class HttpsListener implements Runnable {
 
     private NgdContext context;
-    private Logger log;
+    private Logger log = Logger.getLogger();
 
     public HttpsListener(NgdContext context) {
         this.context = context;
-        this.log = context.log;
     }
 
     @Override
     public void run() {
         try (ServerSocket ssocket = SocketHelper.newSSLServerSocket(context.httpsPort)) {
-            log.log("监听建立成功：[%s:%s]", context.host, context.httpsPort);
+            log.info("监听建立成功：[%s:%s]", context.host, context.httpsPort);
             while (true) {
                 Socket socket = ssocket.accept();
                 Thread thread = new Thread(new HttpHandler(socket, context, "https"));

@@ -1,8 +1,8 @@
 package ngrok.log;
 
-import ngrok.util.Util;
+import ngrok.util.ToolUtil;
 
-public class LoggerImpl implements Logger {
+public class LoggerImpl extends Logger {
 
     private boolean enableLog = true;
 
@@ -12,16 +12,16 @@ public class LoggerImpl implements Logger {
     }
 
     @Override
-    public synchronized void log(String fmt, Object... args) {
+    public synchronized void info(String fmt, Object... args) {
         if (enableLog) {
-            System.out.printf("[%s] %s\n", Util.getTime(), String.format(fmt, args));
+            System.out.printf("[%s] %s\n", ToolUtil.getTime(), String.format(fmt, args));
         }
     }
 
     @Override
     public synchronized void err(String fmt, Object... args) {
         if (enableLog) {
-            System.err.printf("[%s] %s\n", Util.getTime(), String.format(fmt, args));
+            System.err.printf("[%s] %s\n", ToolUtil.getTime(), String.format(fmt, args));
         }
     }
 }

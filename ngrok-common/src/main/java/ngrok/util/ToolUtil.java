@@ -9,9 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-public class Util {
+public class ToolUtil {
 
-    private Util() {
+    private ToolUtil() {
     }
 
     public static String getRandString(int len) {
@@ -54,5 +54,13 @@ public class Util {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
         }
+    }
+
+    public static boolean isEmpty(String s) {
+        return s == null || s.isEmpty();
+    }
+
+    public static boolean isNotEmpty(String s) {
+        return !isEmpty(s);
     }
 }

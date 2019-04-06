@@ -1,10 +1,8 @@
 package ngrok;
 
-import ngrok.log.Logger;
-import ngrok.log.LoggerImpl;
-import ngrok.model.Tunnel;
-
 import java.util.List;
+
+import ngrok.model.Tunnel;
 
 public class NgContext {
 
@@ -12,20 +10,23 @@ public class NgContext {
     public int serverPort;
     public List<Tunnel> tunnelList;
     public String authToken;
-    public Logger log = new LoggerImpl();// 如果没有注入日志，则使用默认日志
 
-    private volatile Boolean authOk = false;
-    private final Object lock = new Object();
+    /** 待机中 */
+    public static final int PENDING = 0;
+    /** 已连接 */
+    public static final int CONNECTED = 1;
+    /** 已认证 */
+    public static final int AUTHERIZED = 2;
+    /** 已退出 */
+    public static final int EXITED = 3;
 
-    public Boolean getAuthOk() {
-        synchronized (lock) {
-            return authOk;
-        }
+    private volatile int status = PENDING;
+
+    public synchronized int getStatus() {
+        return this.status;
     }
 
-    public void setAuthOk(Boolean authOk) {
-        synchronized (lock) {
-            this.authOk = authOk;
-        }
+    public synchronized void setStatus(int status) {
+        this.status = status;
     }
 }

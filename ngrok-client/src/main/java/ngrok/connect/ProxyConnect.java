@@ -20,13 +20,12 @@ public class ProxyConnect implements Runnable {
     private String clientId;
     private Socket socket;
     private List<Tunnel> tunnelList;
-    private Logger log;
+    private Logger log = Logger.getLogger();
 
     public ProxyConnect(Socket socket, String clientId, NgContext context) {
         this.socket = socket;
         this.clientId = clientId;
         this.tunnelList = context.tunnelList;
-        this.log = context.log;
     }
 
     @Override
@@ -39,7 +38,7 @@ public class ProxyConnect implements Runnable {
                 if (msg == null) {
                     break;
                 }
-                log.log("收到服务器信息：" + msg);
+                log.info("收到服务器信息：" + msg);
                 Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
                 if ("StartProxy".equals(protocol.Type)) {
                     Tunnel tunnel = getTunnelByUrl(protocol.Payload.Url);
@@ -52,7 +51,7 @@ public class ProxyConnect implements Runnable {
                         SocketHelper.sendbuf(socket, header.getBytes());
                         break;
                     }
-                    log.log("建立本地连接：[host]=%s [port]=%s", tunnel.getLocalHost(), tunnel.getLocalPort());
+                    log.info("建立本地连接：[host]=%s [port]=%s", tunnel.getLocalHost(), tunnel.getLocalPort());
                     try (Socket localSocket = SocketHelper.newSocket(tunnel.getLocalHost(), tunnel.getLocalPort())) {
                         Thread thread = new Thread(new LocalConnect(localSocket, socket));
                         thread.setDaemon(true);

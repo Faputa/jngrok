@@ -1,16 +1,16 @@
 package ngrok.model;
 
 import java.net.Socket;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class OuterLink {
+public class Request {
 
     private String url;
     private Socket outerSocket;
     private Socket controlSocket;
-    private BlockingQueue<Socket> proxySocketQueue = new LinkedBlockingQueue<>();
+    private BlockingQueue<Socket> _proxySocket = new ArrayBlockingQueue<>(1);
 
     public String getUrl() {
         return url;
@@ -36,11 +36,11 @@ public class OuterLink {
         this.controlSocket = controlSocket;
     }
 
-    public Socket pollProxySocket(long timeout, TimeUnit unit) throws InterruptedException {
-        return proxySocketQueue.poll(timeout, unit);
+    public Socket getProxySocket(long timeout, TimeUnit unit) throws InterruptedException {
+        return _proxySocket.poll(timeout, unit);
     }
 
-    public void putProxySocket(Socket proxySocket) throws InterruptedException {
-        proxySocketQueue.put(proxySocket);
+    public void setProxySocket(Socket proxySocket) throws InterruptedException {
+        _proxySocket.put(proxySocket);
     }
 }

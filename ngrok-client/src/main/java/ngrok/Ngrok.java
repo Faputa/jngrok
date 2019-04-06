@@ -1,5 +1,8 @@
 package ngrok;
 
+import java.net.Socket;
+import java.util.List;
+
 import ngrok.connect.ControlConnect;
 import ngrok.log.Logger;
 import ngrok.log.LoggerImpl;
@@ -7,14 +10,12 @@ import ngrok.model.Tunnel;
 import ngrok.socket.SocketHelper;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
-import ngrok.util.Util;
-
-import java.net.Socket;
-import java.util.List;
+import ngrok.util.ToolUtil;
 
 public class Ngrok {
 
     private NgContext context = new NgContext();
+    private Logger log = Logger.getLogger();
     private long pingTime = 10000;// 心跳包周期默认为10秒
 
     public void setServerHost(String serverHost) {
@@ -34,34 +35,63 @@ public class Ngrok {
     }
 
     public void setLog(Logger log) {
-        context.log = log;
+        Logger.setLogger(log);
+        this.log = log;
     }
 
     public void setPingTime(long pingTime) {
         this.pingTime = pingTime;
     }
 
-    public void start() {
-        try (Socket socket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort)) {
-            Thread thread = new Thread(new ControlConnect(socket, context));
-            thread.setDaemon(true);
-            thread.start();
+    private Socket newControlConnect() throws Exception {
+        Socket socket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
+        Thread thread = new Thread(new ControlConnect(socket, context));
+        thread.setDaemon(true);
+        thread.start();
+        return socket;
+    }
 
-            long lastTime = System.currentTimeMillis();
-            while (true) {
-                Util.sleep(1000);
-                if (context.getAuthOk() == null) {
-                    break;
+    public void start() {
+        Socket socket = null;
+        long lastTime = System.currentTimeMillis();
+
+        while (true) {
+            switch (context.getStatus()) {
+            case NgContext.PENDING:
+                try {
+                    socket = newControlConnect();
+                    context.setStatus(NgContext.CONNECTED);
+                } catch (Exception e) {
+                    log.err(e.toString());
+                    // 断线重连频率10秒一次
+                    ToolUtil.sleep(10000);
+                    continue;
                 }
-                if (context.getAuthOk()) {
-                    if (System.currentTimeMillis() > lastTime + pingTime) {
+                break;
+
+            case NgContext.CONNECTED:
+                // do nothing
+                break;
+
+            case NgContext.AUTHERIZED:
+                if (System.currentTimeMillis() > lastTime + pingTime) {
+                    try {
                         SocketHelper.sendpack(socket, NgMsg.Ping());
-                        lastTime = System.currentTimeMillis();
+                    } catch (Exception e) {
+                        log.err(e.toString());
+                        // 关闭套接字，读取此套接字的线程将退出阻塞
+                        SocketHelper.safeClose(socket);
                     }
+                    lastTime = System.currentTimeMillis();
                 }
+                break;
+
+            case NgContext.EXITED:
+                // 停顿3秒后退出
+                ToolUtil.sleep(3000);
+                return;
             }
-        } catch (Exception e) {
-            context.log.err(e.toString());
+            ToolUtil.sleep(1000);
         }
     }
 

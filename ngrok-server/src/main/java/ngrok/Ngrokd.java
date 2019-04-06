@@ -8,7 +8,7 @@ import ngrok.log.LoggerImpl;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
 import ngrok.util.SSLContextUtil;
-import ngrok.util.Util;
+import ngrok.util.ToolUtil;
 
 public class Ngrokd {
 
@@ -43,28 +43,38 @@ public class Ngrokd {
     }
 
     public void setLog(Logger log) {
-        context.log = log;
+        Logger.setLogger(log);
+    }
+
+    private Thread newDaemonThread(Runnable runnable) {
+        Thread thread = new Thread(runnable);
+        thread.setDaemon(true);
+        thread.start();
+        return thread;
     }
 
     public void start() {
         try {
-            Thread clientListenerThread = new Thread(new ClientListener(context));
-            clientListenerThread.setDaemon(true);
-            clientListenerThread.start();
-            if (context.httpPort != null) {
-                Thread httpListenerThread = new Thread(new HttpListener(context));
-                httpListenerThread.setDaemon(true);
-                httpListenerThread.start();
-            }
-            if (context.httpsPort != null) {
-                Thread httpsListenerThread = new Thread(new HttpsListener(context));
-                httpsListenerThread.setDaemon(true);
-                httpsListenerThread.start();
-            }
-
+            Thread clientListener = null;
+            Thread httpListener = null;
+            Thread httpsListener = null;
+            long lastTime = System.currentTimeMillis();
             while (true) {
-                Util.sleep(50000);
-                context.closeIdleClient();
+                if (clientListener == null || !clientListener.isAlive()) {
+                    clientListener = newDaemonThread(new ClientListener(context));
+                }
+                if (context.httpPort != null && (httpListener == null || !httpListener.isAlive())) {
+                    httpListener = newDaemonThread(new HttpListener(context));
+                }
+                if (context.httpsPort != null && (httpsListener == null || !httpsListener.isAlive())) {
+                    httpsListener = newDaemonThread(new HttpsListener(context));
+                }
+                // 清理空闲的客户端
+                if (System.currentTimeMillis() > lastTime + 50000) {
+                    context.closeIdleClient();
+                    lastTime = System.currentTimeMillis();
+                }
+                ToolUtil.sleep(10000);
             }
         } catch (Exception e) {
             e.getStackTrace();

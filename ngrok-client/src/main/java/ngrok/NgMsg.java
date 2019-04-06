@@ -3,7 +3,7 @@ package ngrok;
 import ngrok.Protocol.Payload;
 import ngrok.model.Tunnel;
 import ngrok.util.GsonUtil;
-import ngrok.util.Util;
+import ngrok.util.ToolUtil;
 
 public class NgMsg {
 
@@ -28,7 +28,7 @@ public class NgMsg {
 
     public static String ReqTunnel(Tunnel tunnel) {
         Payload payload = new Payload();
-        payload.ReqId = Util.getRandString(8);
+        payload.ReqId = ToolUtil.getRandString(8);
         payload.Protocol = tunnel.getProtocol();
         payload.Hostname = tunnel.getHostname();
         payload.Subdomain = tunnel.getSubdomain();

@@ -8,12 +8,12 @@ import ngrok.NgdMsg;
 import ngrok.Protocol;
 import ngrok.listener.TcpListener;
 import ngrok.log.Logger;
-import ngrok.model.OuterLink;
+import ngrok.model.Request;
 import ngrok.model.TunnelInfo;
 import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
 import ngrok.util.GsonUtil;
-import ngrok.util.Util;
+import ngrok.util.ToolUtil;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,12 +24,11 @@ public class ClientHandler implements Runnable {
 
     private Socket socket;
     private NgdContext context;
-    private Logger log;
+    private Logger log = Logger.getLogger();
 
     public ClientHandler(Socket socket, NgdContext context) {
         this.socket = socket;
         this.context = context;
-        this.log = context.log;
     }
 
     @Override
@@ -42,15 +41,15 @@ public class ClientHandler implements Runnable {
                 if (msg == null) {
                     break;
                 }
-                log.log("收到客户端信息：" + msg);
+                log.info("收到客户端信息：" + msg);
                 Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
 
                 if ("Auth".equals(protocol.Type)) {
                     if (context.authToken != null && !context.authToken.equals(protocol.Payload.AuthToken)) {
                         SocketHelper.sendpack(socket, NgdMsg.AuthResp(null, "Auth token check failure"));
-                        return;
+                        break;
                     }
-                    clientId = Util.MD5(String.valueOf(System.currentTimeMillis()));
+                    clientId = ToolUtil.MD5(String.valueOf(System.currentTimeMillis()));
                     context.initClientInfo(clientId, socket);
                     SocketHelper.sendpack(socket, NgdMsg.AuthResp(clientId, null));
                     SocketHelper.sendpack(socket, NgdMsg.ReqProxy());
@@ -58,29 +57,29 @@ public class ClientHandler implements Runnable {
                 }
                 if ("RegProxy".equals(protocol.Type)) {
                     String _clientId = protocol.Payload.ClientId;
-                    BlockingQueue<OuterLink> queue = context.getOuterLinkQueue(_clientId);
+                    BlockingQueue<Request> queue = context.getRequestQueue(_clientId);
                     if (queue == null) {
                         // 客户端信息不存在
                         break;
                     }
-                    OuterLink link = queue.poll(60, TimeUnit.SECONDS);
-                    if (link == null) {
+                    Request request = queue.poll(60, TimeUnit.SECONDS);
+                    if (request == null) {
                         // 队列超时，重新发起代理连接
                         SocketHelper.sendpack(context.getControlSocket(_clientId), NgdMsg.ReqProxy());
                         break;
                     }
-                    if (link.getUrl() == null) {
+                    if (request.getUrl() == null) {
                         // 毒丸
                         break;
                     }
                     try {
-                        SocketHelper.sendpack(socket, NgdMsg.StartProxy(link.getUrl()));
-                        link.putProxySocket(socket);
+                        SocketHelper.sendpack(socket, NgdMsg.StartProxy(request.getUrl()));
+                        request.setProxySocket(socket);
                     } catch (Exception e) {
                         log.err(e.toString());
                     }
-                    try (Socket outerSocket = link.getOuterSocket()) {
-                        SocketHelper.sendpack(link.getControlSocket(), NgdMsg.ReqProxy());
+                    try (Socket outerSocket = request.getOuterSocket()) {
+                        SocketHelper.sendpack(request.getControlSocket(), NgdMsg.ReqProxy());
                         SocketHelper.forward(socket, outerSocket);
                     } catch (Exception e) {
                     }
@@ -94,9 +93,9 @@ public class ClientHandler implements Runnable {
 
                 if ("ReqTunnel".equals(protocol.Type)) {
                     if ("http".equals(protocol.Payload.Protocol) || "https".equals(protocol.Payload.Protocol)) {
-                        if (protocol.Payload.Hostname == null || protocol.Payload.Hostname.isEmpty()) {
-                            if (protocol.Payload.Subdomain == null || protocol.Payload.Subdomain.isEmpty()) {
-                                protocol.Payload.Subdomain = Util.getRandString(5);
+                        if (ToolUtil.isEmpty(protocol.Payload.Hostname)) {
+                            if (ToolUtil.isEmpty(protocol.Payload.Subdomain)) {
+                                protocol.Payload.Subdomain = ToolUtil.getRandString(5);
                             }
                             protocol.Payload.Hostname = protocol.Payload.Subdomain + "." + context.domain;
                         }
@@ -129,7 +128,7 @@ public class ClientHandler implements Runnable {
                     } else if ("tcp".equals(protocol.Payload.Protocol)) {
                         String url = "tcp://" + context.domain + ":" + protocol.Payload.RemotePort;
                         if (context.getTunnelInfo(url) != null) {
-                            context.getTunnelInfo(url).getTcpServerSocket().close();
+                            SocketHelper.safeClose(context.getTunnelInfo(url).getTcpServerSocket());
                         }
                         ServerSocket serverSocket;
                         try {
@@ -150,8 +149,9 @@ public class ClientHandler implements Runnable {
                         context.putTunnelInfo(url, tunnel);
                         SocketHelper.sendpack(socket, NgdMsg.NewTunnel(protocol.Payload.ReqId, url, protocol.Payload.Protocol, null));
                     }
-
-                } else if ("Ping".equals(protocol.Type)) {
+                    continue;
+                }
+                if ("Ping".equals(protocol.Type)) {
                     SocketHelper.sendpack(socket, NgdMsg.Pong());
                 }
             }
@@ -159,7 +159,7 @@ public class ClientHandler implements Runnable {
             log.err(e.toString());
         }
         if (clientId != null) {
-            log.log("客户端 %s 退出", clientId);
+            log.info("客户端 %s 退出", clientId);
             context.delClientInfo(clientId);
             context.delTunnelInfo(clientId);
         }

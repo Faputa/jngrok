@@ -1,11 +1,5 @@
 package ngrok;
 
-import ngrok.log.Logger;
-import ngrok.log.LoggerImpl;
-import ngrok.model.OuterLink;
-import ngrok.model.TunnelInfo;
-
-import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,6 +8,10 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import ngrok.model.Request;
+import ngrok.model.TunnelInfo;
+import ngrok.socket.SocketHelper;
 
 public class NgdContext {
 
@@ -24,19 +22,18 @@ public class NgdContext {
     public Integer httpPort;
     public Integer httpsPort;
     public String authToken;
-    public Logger log = new LoggerImpl();// 如果没有注入日志，则使用默认日志
 
     // client info
-    private Map<String, BlockingQueue<OuterLink>> outerLinkQueueMap = new ConcurrentHashMap<>();
+    private Map<String, BlockingQueue<Request>> requestQueueMap = new ConcurrentHashMap<>();
     private Map<String, Socket> controlSocketMap = new ConcurrentHashMap<>();
 
     public void initClientInfo(String clientId, Socket controlSocket) {
-        outerLinkQueueMap.put(clientId, new LinkedBlockingQueue<>());
+        requestQueueMap.put(clientId, new LinkedBlockingQueue<>());
         controlSocketMap.put(clientId, controlSocket);
     }
 
-    public BlockingQueue<OuterLink> getOuterLinkQueue(String clientId) {
-        return outerLinkQueueMap.get(clientId);
+    public BlockingQueue<Request> getRequestQueue(String clientId) {
+        return requestQueueMap.get(clientId);
     }
 
     public Socket getControlSocket(String clientId) {
@@ -45,13 +42,13 @@ public class NgdContext {
 
     public void delClientInfo(String clientId) {
         controlSocketMap.remove(clientId);
-        BlockingQueue<OuterLink> queue = outerLinkQueueMap.get(clientId);
+        BlockingQueue<Request> queue = requestQueueMap.get(clientId);
         if (queue != null) {
             try {
-                queue.put(new OuterLink());// 毒丸
+                queue.put(new Request());// 毒丸
             } catch (InterruptedException e) {
             }
-            outerLinkQueueMap.remove(clientId);
+            requestQueueMap.remove(clientId);
         }
     }
 
@@ -72,10 +69,7 @@ public class NgdContext {
             TunnelInfo tunnel = it.next().getValue();
             if (clientId.equals(tunnel.getClientId())) {
                 if (tunnel.getTcpServerSocket() != null) {
-                    try {
-                        tunnel.getTcpServerSocket().close();
-                    } catch (IOException e) {
-                    }
+                    SocketHelper.safeClose(tunnel.getTcpServerSocket());
                 }
                 it.remove();
             }
@@ -89,10 +83,7 @@ public class NgdContext {
         }
         for (Map.Entry<String, Socket> entry : controlSocketMap.entrySet()) {
             if (!clientIdSet.contains(entry.getKey())) {
-                try {
-                    entry.getValue().close();
-                } catch (IOException e) {
-                }
+                SocketHelper.safeClose(entry.getValue());
             }
         }
     }
