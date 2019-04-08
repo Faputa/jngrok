@@ -5,6 +5,7 @@ package ngrok.handler;
 
 import ngrok.NgdContext;
 import ngrok.log.Logger;
+import ngrok.model.ClientInfo;
 import ngrok.model.Request;
 import ngrok.model.TunnelInfo;
 import ngrok.socket.SocketHelper;
@@ -55,15 +56,17 @@ public class HttpHandler implements Runnable {
                     SocketHelper.sendbuf(socket, header.getBytes());
                     break;
                 }
+                ClientInfo client = context.getClientInfo(tunnel.getClientId());
                 Request request = new Request();
                 request.setUrl(url);
                 request.setOuterSocket(socket);
-                request.setControlSocket(tunnel.getControlSocket());
-                context.getRequestQueue(tunnel.getClientId()).put(request);
+                request.setControlSocket(client.getControlSocket());
+                client.getRequestQueue().put(request);
                 try (Socket proxySocket = request.getProxySocket(60, TimeUnit.SECONDS)) { // 最多等待60秒
                     SocketHelper.sendbuf(proxySocket, buf);
                     SocketHelper.forward(socket, proxySocket);
                 } catch (Exception e) {
+                    // ignore
                 }
                 break;
             }

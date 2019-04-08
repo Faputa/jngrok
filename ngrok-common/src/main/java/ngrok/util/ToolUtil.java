@@ -53,6 +53,7 @@ public class ToolUtil {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
+            // ignore
         }
     }
 

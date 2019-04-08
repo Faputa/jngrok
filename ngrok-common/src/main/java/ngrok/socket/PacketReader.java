@@ -1,6 +1,7 @@
 package ngrok.socket;
 
 import ngrok.util.ByteUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +22,7 @@ public class PacketReader {
         this.socket.setSoTimeout(timeout);
     }
 
+    @Nullable
     public String read() throws IOException {
         while (true) {
             if (para.length >= 8) {
@@ -41,6 +43,7 @@ public class PacketReader {
         }
     }
 
+    @Nullable
     public String read(int timeout) throws IOException {
         socket.setSoTimeout(timeout);
         return read();

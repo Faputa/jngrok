@@ -69,7 +69,7 @@ public class Ngrokd {
                 if (context.httpsPort != null && (httpsListener == null || !httpsListener.isAlive())) {
                     httpsListener = newDaemonThread(new HttpsListener(context));
                 }
-                // 清理空闲的客户端
+                // 关闭空闲的客户端
                 if (System.currentTimeMillis() > lastTime + 50000) {
                     context.closeIdleClient();
                     lastTime = System.currentTimeMillis();

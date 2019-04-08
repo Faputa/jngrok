@@ -30,54 +30,69 @@ public class ControlConnect implements Runnable {
     @Override
     public void run() {
         try (Socket socket = this.socket) {
-            String clientId = null;
             SocketHelper.sendpack(socket, NgMsg.Auth(context.authToken));
             PacketReader pr = new PacketReader(socket);
-            while (true) {
-                String msg = pr.read();
-                if (msg == null) {
-                    break;
+            String msg = pr.read();
+            if (msg == null) {
+                // 服务器主动关闭连接，正常退出
+                context.setStatus(NgContext.EXITED);
+                return;
+            }
+            log.info("收到服务器信息：" + msg);
+            Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
+
+            if ("AuthResp".equals(protocol.Type)) {
+                if (ToolUtil.isNotEmpty(protocol.Payload.Error)) {
+                    log.err("客户端认证失败：" + protocol.Payload.Error);
+                    // 正常退出
+                    context.setStatus(NgContext.EXITED);
+                    return;
                 }
-                log.info("收到服务器信息：" + msg);
-                Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
+                String clientId = protocol.Payload.ClientId;
+                log.info("客户端认证成功：" + clientId);
 
-                switch (protocol.Type) {
-                case "ReqProxy":
-                    try {
-                        Socket remoteSocket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
-                        Thread thread = new Thread(new ProxyConnect(remoteSocket, clientId, context));
-                        thread.setDaemon(true);
-                        thread.start();
-                    } catch (Exception e) {
-                        log.err(e.toString());
-                    }
-                    continue;
+                // 认证成功
+                context.setStatus(NgContext.AUTHERIZED);
+                for (Tunnel tunnel : context.tunnelList) {
+                    SocketHelper.sendpack(socket, NgMsg.ReqTunnel(tunnel));
+                }
 
-                case "NewTunnel":
-                    if (ToolUtil.isNotEmpty(protocol.Payload.Error)) {
-                        log.err("管道注册失败：" + protocol.Payload.Error);
-                        // 正常退出
+                while (true) {
+                    msg = pr.read();
+                    if (msg == null) {
+                        // 服务器主动关闭连接，正常退出
                         context.setStatus(NgContext.EXITED);
                         return;
                     }
-                    log.info("管道注册成功：" + protocol.Payload.Url);
-                    continue;
+                    log.info("收到服务器信息：" + msg);
+                    protocol = GsonUtil.toBean(msg, Protocol.class);
 
-                case "AuthResp":
-                    if (ToolUtil.isNotEmpty(protocol.Payload.Error)) {
-                        log.err("客户端认证失败：" + protocol.Payload.Error);
-                        // 正常退出
-                        context.setStatus(NgContext.EXITED);
-                        return;
+                    switch (protocol.Type) {
+                    case "ReqProxy":
+                        try {
+                            Socket remoteSocket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
+                            Thread thread = new Thread(new ProxyConnect(remoteSocket, clientId, context));
+                            thread.setDaemon(true);
+                            thread.start();
+                        } catch (Exception e) {
+                            log.err(e.toString());
+                        }
+                        continue;
+
+                    case "NewTunnel":
+                        if (ToolUtil.isNotEmpty(protocol.Payload.Error)) {
+                            log.err("管道注册失败：" + protocol.Payload.Error);
+                            // 正常退出
+                            context.setStatus(NgContext.EXITED);
+                            return;
+                        }
+                        log.info("管道注册成功：" + protocol.Payload.Url);
+                        continue;
+
+                    case "Pong":
+                        // do nothing
+                        continue;
                     }
-                    clientId = protocol.Payload.ClientId;
-                    log.info("客户端认证成功：" + clientId);
-                    // 认证成功
-                    context.setStatus(NgContext.AUTHERIZED);
-                    for (Tunnel tunnel : context.tunnelList) {
-                        SocketHelper.sendpack(socket, NgMsg.ReqTunnel(tunnel));
-                    }
-                    continue;
                 }
             }
         } catch (IOException e) {

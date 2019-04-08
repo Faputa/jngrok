@@ -23,6 +23,7 @@ public class LocalConnect implements Runnable {
              Socket remoteSocket = this.remoteSocket) {
             SocketHelper.forward(localSocket, remoteSocket);
         } catch (Exception e) {
+            // ignore
         }
     }
 }

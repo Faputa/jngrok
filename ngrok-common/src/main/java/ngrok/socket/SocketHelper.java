@@ -6,6 +6,9 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+
+import org.jetbrains.annotations.Nullable;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -38,23 +41,25 @@ public class SocketHelper {
         return ssocket;
     }
 
-    public static void safeClose(Socket socket) {
+    public static void safeClose(@Nullable Socket socket) {
         if (socket == null) {
             return;
         }
         try {
             socket.close();
         } catch (IOException e) {
+            // ignore
         }
     }
 
-    public static void safeClose(ServerSocket serverSocket) {
+    public static void safeClose(@Nullable ServerSocket serverSocket) {
         if (serverSocket == null) {
             return;
         }
         try {
             serverSocket.close();
         } catch (IOException e) {
+            // ignore
         }
     }
 
@@ -100,6 +105,7 @@ public class SocketHelper {
         return map;
     }
 
+    @Nullable
     public static Map<String, String> readHttpHead(byte[] buf) throws IOException {
         Map<String, String> map = new HashMap<>();
         InputStream is = new ByteArrayInputStream(buf);

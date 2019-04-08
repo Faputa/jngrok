@@ -1,6 +1,11 @@
 package ngrok.util;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 public class FileUtil {
@@ -8,15 +13,15 @@ public class FileUtil {
     private FileUtil() {
     }
 
-    public static InputStream getFileStream(String name) {
+    public static InputStream getFileStream(String name) throws FileNotFoundException {
         if (name.toLowerCase().startsWith("classpath:")) {
-            return Thread.currentThread().getContextClassLoader().getResourceAsStream(name.substring("classpath:".length()));
+            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(name.substring("classpath:".length()));
+            if (is == null) {
+                throw new FileNotFoundException(name);
+            }
+            return is;
         }
-        try {
-            return new FileInputStream(name);
-        } catch (FileNotFoundException e) {
-            return null;
-        }
+        return new FileInputStream(name);
     }
 
     public static String readTextStream(InputStream is) throws IOException {
