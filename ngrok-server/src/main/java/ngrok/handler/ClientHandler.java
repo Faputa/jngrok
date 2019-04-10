@@ -66,7 +66,7 @@ public class ClientHandler implements Runnable {
                     log.err(e.toString());
                 }
                 try (Socket outerSocket = request.getOuterSocket()) {
-                    SocketHelper.sendpack(request.getControlSocket(), NgdMsg.ReqProxy());
+                    SocketHelper.sendpack(client.getControlSocket(), NgdMsg.ReqProxy());
                     SocketHelper.forward(socket, outerSocket);
                 } catch (Exception e) {
                     // ignore
@@ -141,8 +141,9 @@ public class ClientHandler implements Runnable {
                             context.createTunnelInfo(url, clientId, serverSocket);
                             SocketHelper.sendpack(socket, NgdMsg.NewTunnel(protocol.Payload.ReqId, url, protocol.Payload.Protocol, null));
                         }
+                    }
 
-                    } else if ("Ping".equals(protocol.Type)) {
+                    else if ("Ping".equals(protocol.Type)) {
                         SocketHelper.sendpack(socket, NgdMsg.Pong());
                     }
                 }

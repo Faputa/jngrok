@@ -56,8 +56,7 @@ public class Ngrok {
         long lastTime = System.currentTimeMillis();
 
         while (true) {
-            switch (context.getStatus()) {
-            case NgContext.PENDING:
+            if (context.getStatus() == NgContext.PENDING) {
                 try {
                     socket = newControlConnect();
                     context.setStatus(NgContext.CONNECTED);
@@ -67,13 +66,13 @@ public class Ngrok {
                     ToolUtil.sleep(10000);
                     continue;
                 }
-                break;
+            }
 
-            case NgContext.CONNECTED:
+            else if (context.getStatus() == NgContext.CONNECTED) {
                 // do nothing
-                break;
+            }
 
-            case NgContext.AUTHERIZED:
+            else if (context.getStatus() == NgContext.AUTHERIZED) {
                 if (System.currentTimeMillis() > lastTime + pingTime) {
                     try {
                         SocketHelper.sendpack(socket, NgMsg.Ping());
@@ -84,9 +83,9 @@ public class Ngrok {
                     }
                     lastTime = System.currentTimeMillis();
                 }
-                break;
+            }
 
-            case NgContext.EXITED:
+            else if (context.getStatus() == NgContext.EXITED) {
                 // 停顿3秒后退出
                 ToolUtil.sleep(3000);
                 return;

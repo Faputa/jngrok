@@ -67,8 +67,7 @@ public class ControlConnect implements Runnable {
                     log.info("收到服务器信息：" + msg);
                     protocol = GsonUtil.toBean(msg, Protocol.class);
 
-                    switch (protocol.Type) {
-                    case "ReqProxy":
+                    if ("ReqProxy".equals(protocol.Type)) {
                         try {
                             Socket remoteSocket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
                             Thread thread = new Thread(new ProxyConnect(remoteSocket, clientId, context));
@@ -77,9 +76,9 @@ public class ControlConnect implements Runnable {
                         } catch (Exception e) {
                             log.err(e.toString());
                         }
-                        continue;
+                    }
 
-                    case "NewTunnel":
+                    else if ("NewTunnel".equals(protocol.Type)) {
                         if (ToolUtil.isNotEmpty(protocol.Payload.Error)) {
                             log.err("管道注册失败：" + protocol.Payload.Error);
                             // 正常退出
@@ -87,11 +86,10 @@ public class ControlConnect implements Runnable {
                             return;
                         }
                         log.info("管道注册成功：" + protocol.Payload.Url);
-                        continue;
+                    }
 
-                    case "Pong":
+                    else if ("Pong".equals(protocol.Type)) {
                         // do nothing
-                        continue;
                     }
                 }
             }

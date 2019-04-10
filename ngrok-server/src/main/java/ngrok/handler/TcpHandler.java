@@ -37,7 +37,6 @@ public class TcpHandler implements Runnable {
             Request request = new Request();
             request.setUrl(url);
             request.setOuterSocket(socket);
-            request.setControlSocket(client.getControlSocket());
             client.getRequestQueue().put(request);
             try (Socket proxySocket = request.getProxySocket(60, TimeUnit.SECONDS)) { // 最多等待60秒
                 SocketHelper.forward(socket, proxySocket);
