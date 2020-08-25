@@ -1,0 +1,1 @@
+java -Xbootclasspath/a:. -jar ngrokd.jar
