@@ -1,1 +1,2 @@
-java -Xbootclasspath/a:. -jar ngrok.jar client-other.json
+set DIR=%~dp0
+java -Xbootclasspath/a:%DIR% -jar %DIR%ngrok.jar client-other.json

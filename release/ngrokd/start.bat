@@ -1,1 +1,2 @@
-java -Xbootclasspath/a:. -jar ngrokd.jar
+set DIR=%~dp0
+java -Xbootclasspath/a:%DIR% -jar %DIR%ngrokd.jar

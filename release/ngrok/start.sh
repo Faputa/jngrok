@@ -1,1 +1,2 @@
-java -Xbootclasspath/a:. -jar ngrok.jar
+DIR=$(dirname $0)
+java -Xbootclasspath/a:$DIR -jar $DIR/ngrok.jar
