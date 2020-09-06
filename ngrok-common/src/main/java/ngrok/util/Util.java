@@ -9,9 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-public class ToolUtil {
+public class Util {
 
-    private ToolUtil() {
+    private Util() {
     }
 
     public static String getRandString(int len) {

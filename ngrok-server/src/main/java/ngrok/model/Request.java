@@ -9,7 +9,7 @@ public class Request {
 
     private String url;
     private Socket outerSocket;
-    private BlockingQueue<Socket> _proxySocket = new ArrayBlockingQueue<>(1);
+    private BlockingQueue<Socket> proxySocket = new ArrayBlockingQueue<>(1);
 
     public String getUrl() {
         return url;
@@ -28,10 +28,10 @@ public class Request {
     }
 
     public Socket getProxySocket(long timeout, TimeUnit unit) throws InterruptedException {
-        return _proxySocket.poll(timeout, unit);
+        return proxySocket.poll(timeout, unit);
     }
 
     public void setProxySocket(Socket proxySocket) throws InterruptedException {
-        _proxySocket.put(proxySocket);
+        this.proxySocket.put(proxySocket);
     }
 }

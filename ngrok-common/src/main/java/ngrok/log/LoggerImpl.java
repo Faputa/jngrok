@@ -1,6 +1,6 @@
 package ngrok.log;
 
-import ngrok.util.ToolUtil;
+import ngrok.util.Util;
 
 public class LoggerImpl extends Logger {
 
@@ -14,14 +14,14 @@ public class LoggerImpl extends Logger {
     @Override
     public synchronized void info(String fmt, Object... args) {
         if (enableLog) {
-            System.out.printf("[%s] %s\n", ToolUtil.getTime(), String.format(fmt, args));
+            System.out.printf("[%s] %s\n", Util.getTime(), String.format(fmt, args));
         }
     }
 
     @Override
     public synchronized void err(String fmt, Object... args) {
         if (enableLog) {
-            System.err.printf("[%s] %s\n", ToolUtil.getTime(), String.format(fmt, args));
+            System.err.printf("[%s] %s\n", Util.getTime(), String.format(fmt, args));
         }
     }
 }

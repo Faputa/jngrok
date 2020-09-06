@@ -10,7 +10,7 @@ import ngrok.model.Tunnel;
 import ngrok.socket.SocketHelper;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
-import ngrok.util.ToolUtil;
+import ngrok.util.Util;
 
 public class Ngrok {
 
@@ -63,16 +63,10 @@ public class Ngrok {
                 } catch (Exception e) {
                     log.err(e.toString());
                     // 断线重连频率10秒一次
-                    ToolUtil.sleep(10000);
+                    Util.sleep(10000);
                     continue;
                 }
-            }
-
-            else if (context.getStatus() == NgContext.CONNECTED) {
-                // do nothing
-            }
-
-            else if (context.getStatus() == NgContext.AUTHERIZED) {
+            } else if (context.getStatus() == NgContext.AUTHERIZED) {
                 if (System.currentTimeMillis() > lastTime + pingTime) {
                     try {
                         SocketHelper.sendpack(socket, NgMsg.Ping());
@@ -83,14 +77,14 @@ public class Ngrok {
                     }
                     lastTime = System.currentTimeMillis();
                 }
-            }
-
-            else if (context.getStatus() == NgContext.EXITED) {
+            } else if (context.getStatus() == NgContext.EXITED) {
                 // 停顿3秒后退出
-                ToolUtil.sleep(3000);
+                Util.sleep(3000);
                 return;
+            } else if (context.getStatus() == NgContext.CONNECTED) {
+                // do nothing
             }
-            ToolUtil.sleep(1000);
+            Util.sleep(1000);
         }
     }
 

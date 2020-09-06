@@ -1,6 +1,9 @@
 package ngrok.model;
 
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -10,6 +13,8 @@ public class ClientInfo {
 
     private Socket controlSocket;
     private BlockingQueue<Request> requestQueue = new LinkedBlockingQueue<>();
+    private List<Socket> proxySockets = Collections.synchronizedList(new ArrayList<>());
+    private List<Socket> outerSockets = Collections.synchronizedList(new ArrayList<>());
 
     public Socket getControlSocket() {
         return controlSocket;
@@ -23,11 +28,33 @@ public class ClientInfo {
         return requestQueue;
     }
 
+    public void addProxySocket(Socket socket) {
+        proxySockets.add(socket);
+    }
+
+    public void removeProxySocket(Socket socket) {
+        proxySockets.remove(socket);
+    }
+
+    public void addOuterSocket(Socket socket) {
+        outerSockets.add(socket);
+    }
+
+    public void removeOuterSocket(Socket socket) {
+        outerSockets.remove(socket);
+    }
+
     public void close() {
         try {
             requestQueue.put(new Request());// 毒丸
         } catch (InterruptedException e) {
             // ignore
+        }
+        for (Socket socket : proxySockets) {
+            SocketHelper.safeClose(socket);
+        }
+        for (Socket socket : outerSockets) {
+            SocketHelper.safeClose(socket);
         }
         SocketHelper.safeClose(controlSocket);
     }

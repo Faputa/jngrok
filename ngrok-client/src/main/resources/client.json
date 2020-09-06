@@ -5,14 +5,14 @@
 			"hostname":"",
 			"subdomain":"www",
 			"localHost":"127.0.0.1",
-			"localPort":8080
+			"localPort":5500
 		},
 		{
 			"protocol":"https",
 			"hostname":"www.myngrok.com",
 			"subdomain":"",
 			"localHost":"127.0.0.1",
-			"localPort":8080
+			"localPort":5500
 		},
 		{
 			"protocol":"tcp",
@@ -20,7 +20,7 @@
 			"subdomain":"",
 			"remotePort":12345,
 			"localHost":"127.0.0.1",
-			"localPort":8080
+			"localPort":5500
 		}
 	],
 	"serverHost":"myngrok.com",

@@ -1,8 +1,12 @@
 package ngrok;
 
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ngrok.model.Tunnel;
+import ngrok.socket.SocketHelper;
 
 public class NgContext {
 
@@ -10,6 +14,37 @@ public class NgContext {
     public int serverPort;
     public List<Tunnel> tunnelList;
     public String authToken;
+
+    private List<Socket> localSockets = Collections.synchronizedList(new ArrayList<>());
+    private List<Socket> proxySockets = Collections.synchronizedList(new ArrayList<>());
+
+    public void addLocalSocket(Socket socket) {
+        localSockets.add(socket);
+    }
+
+    public void removeLocalSocket(Socket socket) {
+        localSockets.remove(socket);
+    }
+
+    public void addProxySocket(Socket socket) {
+        proxySockets.add(socket);
+    }
+
+    public void removeProxySocket(Socket socket) {
+        proxySockets.remove(socket);
+    }
+
+    public void closeLocalSockets() {
+        for (Socket socket : localSockets) {
+            SocketHelper.safeClose(socket);
+        }
+    }
+
+    public void closeProxySockets() {
+        for (Socket socket : proxySockets) {
+            SocketHelper.safeClose(socket);
+        }
+    }
 
     /** 待机中 */
     public static final int PENDING = 0;

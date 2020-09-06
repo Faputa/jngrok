@@ -8,7 +8,7 @@ import ngrok.log.LoggerImpl;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
 import ngrok.util.SSLContextUtil;
-import ngrok.util.ToolUtil;
+import ngrok.util.Util;
 
 public class Ngrokd {
 
@@ -74,7 +74,7 @@ public class Ngrokd {
                     context.closeIdleClient();
                     lastTime = System.currentTimeMillis();
                 }
-                ToolUtil.sleep(10000);
+                Util.sleep(10000);
             }
         } catch (Exception e) {
             e.getStackTrace();
