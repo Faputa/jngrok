@@ -1,16 +1,19 @@
 package ngrok;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ngrok.listener.ClientListener;
 import ngrok.listener.HttpListener;
 import ngrok.listener.HttpsListener;
-import ngrok.log.Logger;
-import ngrok.log.LoggerImpl;
 import ngrok.util.FileUtil;
 import ngrok.util.GsonUtil;
 import ngrok.util.SSLContextUtil;
 import ngrok.util.Util;
 
 public class Ngrokd {
+
+    private static final Logger log = LoggerFactory.getLogger(Ngrokd.class);
 
     private NgdContext context = new NgdContext();
 
@@ -40,10 +43,6 @@ public class Ngrokd {
 
     public void setAuthToken(String authToken) {
         context.authToken = authToken;
-    }
-
-    public void setLog(Logger log) {
-        Logger.setLogger(log);
     }
 
     private Thread newDaemonThread(Runnable runnable) {
@@ -77,7 +76,7 @@ public class Ngrokd {
                 Util.sleep(10000);
             }
         } catch (Exception e) {
-            e.getStackTrace();
+            log.error(e.toString());
         }
     }
 
@@ -96,7 +95,6 @@ public class Ngrokd {
         ngrokd.setHttpPort(config.httpPort);
         ngrokd.setHttpsPort(config.httpsPort);
         ngrokd.setAuthToken(config.authToken);
-        ngrokd.setLog(new LoggerImpl().setEnableLog(config.enableLog));
         ngrokd.start();
     }
 }

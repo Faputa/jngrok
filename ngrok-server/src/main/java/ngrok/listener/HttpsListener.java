@@ -5,17 +5,20 @@ package ngrok.listener;
 
 import ngrok.NgdContext;
 import ngrok.handler.HttpHandler;
-import ngrok.log.Logger;
 import ngrok.socket.SocketHelper;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HttpsListener implements Runnable {
 
+    private static final Logger log = LoggerFactory.getLogger(HttpsListener.class);
+
     private NgdContext context;
-    private Logger log = Logger.getLogger();
 
     public HttpsListener(NgdContext context) {
         this.context = context;
@@ -24,7 +27,7 @@ public class HttpsListener implements Runnable {
     @Override
     public void run() {
         try (ServerSocket ssocket = SocketHelper.newSSLServerSocket(context.httpsPort)) {
-            log.info("监听建立成功：[%s:%s]", context.host, context.httpsPort);
+            log.info("监听建立成功：[{}:{}]", context.host, context.httpsPort);
             while (true) {
                 Socket socket = ssocket.accept();
                 Thread thread = new Thread(new HttpHandler(socket, context, "https"));
@@ -32,7 +35,7 @@ public class HttpsListener implements Runnable {
                 thread.start();
             }
         } catch (IOException e) {
-            log.err(e.toString());
+            log.error(e.toString());
         }
     }
 }

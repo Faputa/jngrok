@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.net.Socket;
 
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import ngrok.CloseSocketSignal;
 import ngrok.NgContext;
 import ngrok.NgMsg;
 import ngrok.Protocol;
-import ngrok.log.Logger;
 import ngrok.model.Tunnel;
 import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
@@ -19,10 +21,11 @@ import ngrok.util.GsonUtil;
 
 public class ProxyConnect implements Runnable {
 
+    private static final Logger log = LoggerFactory.getLogger(ProxyConnect.class);
+
     private String clientId;
     private Socket socket;
     private NgContext context;
-    private Logger log = Logger.getLogger();
 
     public ProxyConnect(Socket socket, String clientId, NgContext context) {
         this.socket = socket;
@@ -37,30 +40,32 @@ public class ProxyConnect implements Runnable {
             PacketReader pr = new PacketReader(socket);
             String msg = pr.read();
             if (msg == null) {
-                return;
+                throw new CloseSocketSignal(socket);
             }
             log.info("收到服务器信息：" + msg);
             Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
             if ("StartProxy".equals(protocol.Type)) {
                 handleStartProxy(socket, protocol);
             }
+        } catch (CloseSocketSignal e) {
+            // ignore
         } catch (Exception e) {
-            log.err(e.toString());
+            log.error(e.toString());
         }
     }
 
-    private void handleStartProxy(Socket socket, Protocol protocol) throws IOException {
+    private void handleStartProxy(Socket socket, Protocol protocol) throws Exception {
         Tunnel tunnel = getTunnelByUrl(protocol.Payload.Url);
         if (tunnel == null) {
             String html = "没有找到对应的管道：" + protocol.Payload.Url;
-            log.err(html);
+            log.error(html);
             String header = "HTTP/1.0 404 Not Found\r\n";
             header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
             header = header + html;
             SocketHelper.sendbuf(socket, header.getBytes());
-            return;
+            throw new CloseSocketSignal(socket);
         }
-        log.info("建立本地连接：[host]=%s [port]=%s", tunnel.getLocalHost(), tunnel.getLocalPort());
+        log.info("建立本地连接：[host]={} [port]={}", tunnel.getLocalHost(), tunnel.getLocalPort());
         try (Socket localSocket = SocketHelper.newSocket(tunnel.getLocalHost(), tunnel.getLocalPort())) {
             Thread thread = new Thread(new LocalConnect(localSocket, socket));
             thread.setDaemon(true);
@@ -75,8 +80,8 @@ public class ProxyConnect implements Runnable {
                 context.removeLocalSocket(localSocket);
                 context.removeProxySocket(socket);
             }
-        } catch (Exception e) {
-            log.err("本地连接建立失败：[host]=%s [port]=%s", tunnel.getLocalHost(), tunnel.getLocalPort());
+        } catch (IOException e) {
+            log.error("本地连接建立失败：[host]={} [port]={}", tunnel.getLocalHost(), tunnel.getLocalPort());
             String html = "<html><body style=\"background-color: #97a8b9\"><div style=\"margin:auto; width:400px;padding: 20px 60px; background-color: #D3D3D3; border: 5px solid maroon;\"><h2>Tunnel ";
             html += protocol.Payload.Url;
             html += " unavailable</h2><p>Unable to initiate connection to <strong>";

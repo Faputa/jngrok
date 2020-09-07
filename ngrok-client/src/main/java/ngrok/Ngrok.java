@@ -3,9 +3,10 @@ package ngrok;
 import java.net.Socket;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ngrok.connect.ControlConnect;
-import ngrok.log.Logger;
-import ngrok.log.LoggerImpl;
 import ngrok.model.Tunnel;
 import ngrok.socket.SocketHelper;
 import ngrok.util.FileUtil;
@@ -14,8 +15,9 @@ import ngrok.util.Util;
 
 public class Ngrok {
 
+    private static final Logger log = LoggerFactory.getLogger(Ngrok.class);
+
     private NgContext context = new NgContext();
-    private Logger log = Logger.getLogger();
     private long pingTime = 10000;// 心跳包周期默认为10秒
 
     public void setServerHost(String serverHost) {
@@ -32,11 +34,6 @@ public class Ngrok {
 
     public void setAuthToken(String authToken) {
         context.authToken = authToken;
-    }
-
-    public void setLog(Logger log) {
-        Logger.setLogger(log);
-        this.log = log;
     }
 
     public void setPingTime(long pingTime) {
@@ -61,7 +58,7 @@ public class Ngrok {
                     socket = newControlConnect();
                     context.setStatus(NgContext.CONNECTED);
                 } catch (Exception e) {
-                    log.err(e.toString());
+                    log.error(e.toString());
                     // 断线重连频率10秒一次
                     Util.sleep(10000);
                     continue;
@@ -71,7 +68,7 @@ public class Ngrok {
                     try {
                         SocketHelper.sendpack(socket, NgMsg.Ping());
                     } catch (Exception e) {
-                        log.err(e.toString());
+                        log.error(e.toString());
                         // 关闭套接字，读取此套接字的线程将退出阻塞
                         SocketHelper.safeClose(socket);
                     }
@@ -98,7 +95,6 @@ public class Ngrok {
         ngrok.setServerPort(config.serverPort);
         ngrok.setPingTime(config.pingTime);
         ngrok.setAuthToken(config.authToken);
-        ngrok.setLog(new LoggerImpl().setEnableLog(config.enableLog));
         ngrok.start();
     }
 }

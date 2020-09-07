@@ -4,7 +4,6 @@
 package ngrok.handler;
 
 import ngrok.NgdContext;
-import ngrok.log.Logger;
 import ngrok.model.ClientInfo;
 import ngrok.model.Request;
 import ngrok.model.TunnelInfo;
@@ -13,11 +12,15 @@ import ngrok.socket.SocketHelper;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class TcpHandler implements Runnable {
+
+    private static final Logger log = LoggerFactory.getLogger(TcpHandler.class);
 
     private Socket socket;
     private NgdContext context;
-    private Logger log = Logger.getLogger();
 
     public TcpHandler(Socket socket, NgdContext context) {
         this.socket = socket;
@@ -44,7 +47,7 @@ public class TcpHandler implements Runnable {
                 // ignore
             }
         } catch (Exception e) {
-            log.err(e.toString());
+            log.error(e.toString());
         }
     }
 }

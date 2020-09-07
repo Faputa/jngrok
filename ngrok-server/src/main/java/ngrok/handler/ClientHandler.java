@@ -8,12 +8,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ngrok.CloseSocketSignal;
 import ngrok.NgdContext;
 import ngrok.NgdMsg;
 import ngrok.Protocol;
 import ngrok.listener.TcpListener;
-import ngrok.log.Logger;
 import ngrok.model.ClientInfo;
 import ngrok.model.Request;
 import ngrok.socket.PacketReader;
@@ -23,9 +25,10 @@ import ngrok.util.Util;
 
 public class ClientHandler implements Runnable {
 
+    private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
+
     private Socket socket;
     private NgdContext context;
-    private Logger log = Logger.getLogger();
 
     public ClientHandler(Socket socket, NgdContext context) {
         this.socket = socket;
@@ -44,7 +47,7 @@ public class ClientHandler implements Runnable {
         } catch (CloseSocketSignal e) {
             // ignore
         } catch (Exception e) {
-            log.err(e.toString());
+            log.error(e.toString());
         }
         log.info("Connect exit: " + socket);
     }
@@ -81,7 +84,7 @@ public class ClientHandler implements Runnable {
             SocketHelper.sendpack(socket, NgdMsg.StartProxy(request.getUrl()));
             request.setProxySocket(socket);
         } catch (Exception e) {
-            log.err(e.toString());
+            log.error(e.toString());
         }
         try (Socket outerSocket = request.getOuterSocket()) {
             try {
@@ -118,7 +121,7 @@ public class ClientHandler implements Runnable {
                 }
             }
         } finally {
-            log.info("客户端 %s 退出", clientId);
+            log.info("客户端 {} 退出", clientId);
             context.deleteClientInfo(clientId);
             context.deleteTunnelInfo(clientId);
         }

@@ -1,6 +1,13 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
 release/**/*.jar
+release/**/client-*.json
+release/**/server-*.json
+release/**/start-*.bat
+release/**/start-*.sh
+release/**/stop-*.bat
+release/**/stop-*.sh
+/log
 
 # STS
 .apt_generated
