@@ -37,8 +37,12 @@ public class Ngrokd {
         context.port = port;
     }
 
-    public void setTimeout(int timeout) {
-        context.timeout = timeout;
+    public void setSoTimeout(int soTimeout) {
+        context.soTimeout = soTimeout;
+    }
+
+    public void setPingTimeout(int pingTimeout) {
+        context.pingTimeout = pingTimeout > 1000 ? pingTimeout : 1000;
     }
 
     public void setAuthToken(String authToken) {
@@ -68,9 +72,10 @@ public class Ngrokd {
                 if (context.httpsPort != null && (httpsListener == null || !httpsListener.isAlive())) {
                     httpsListener = newDaemonThread(new HttpsListener(context));
                 }
-                // 关闭空闲的客户端
+                // 关闭空闲和心跳超时的客户端
                 if (System.currentTimeMillis() > lastTime + 50000) {
                     context.closeIdleClient();
+                    context.closePingTimeoutClient();
                     lastTime = System.currentTimeMillis();
                 }
                 Util.sleep(10000);
@@ -91,7 +96,8 @@ public class Ngrokd {
         ngrokd.setDomain(config.domain);
         ngrokd.setHost(config.host);
         ngrokd.setPort(config.port);
-        ngrokd.setTimeout(config.timeout);
+        ngrokd.setSoTimeout(config.soTimeout);
+        ngrokd.setPingTimeout(config.pingTimeout);
         ngrokd.setHttpPort(config.httpPort);
         ngrokd.setHttpsPort(config.httpsPort);
         ngrokd.setAuthToken(config.authToken);

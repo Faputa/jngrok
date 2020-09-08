@@ -16,7 +16,8 @@ public class NgdContext {
     public String domain;
     public String host;
     public int port;
-    public int timeout;
+    public int soTimeout;
+    public int pingTimeout;
     public Integer httpPort;
     public Integer httpsPort;
     public String authToken;
@@ -30,6 +31,7 @@ public class NgdContext {
 
     public void createClientInfo(String clientId, Socket controlSocket) {
         ClientInfo clientInfo = new ClientInfo();
+        clientInfo.setLastPingTime(System.currentTimeMillis());
         clientInfo.setControlSocket(controlSocket);
         clientInfoMap.put(clientId, clientInfo);
     }
@@ -78,6 +80,17 @@ public class NgdContext {
         for (Map.Entry<String, ClientInfo> e : clientInfoMap.entrySet()) {
             if (!clientIdSet.contains(e.getKey())) {
                 e.getValue().close();
+            }
+        }
+    }
+
+    /**
+     * 关闭心跳超时的客户端
+     */
+    public void closePingTimeoutClient() {
+        for (ClientInfo e : clientInfoMap.values()) {
+            if (System.currentTimeMillis() > e.getLastPingTime() + pingTimeout) {
+                e.close();
             }
         }
     }

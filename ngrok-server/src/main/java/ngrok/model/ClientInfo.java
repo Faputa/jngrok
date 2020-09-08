@@ -15,6 +15,7 @@ public class ClientInfo {
     private BlockingQueue<Request> requestQueue = new LinkedBlockingQueue<>();
     private List<Socket> proxySockets = Collections.synchronizedList(new ArrayList<>());
     private List<Socket> outerSockets = Collections.synchronizedList(new ArrayList<>());
+    private long lastPingTime;
 
     public Socket getControlSocket() {
         return controlSocket;
@@ -42,6 +43,14 @@ public class ClientInfo {
 
     public void removeOuterSocket(Socket socket) {
         outerSockets.remove(socket);
+    }
+
+    public long getLastPingTime() {
+        return lastPingTime;
+    }
+
+    public void setLastPingTime(long lastPingTime) {
+        this.lastPingTime = lastPingTime;
     }
 
     public void close() {

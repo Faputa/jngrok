@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ngrok.CloseSocketSignal;
+import ngrok.ExitConnectSignal;
 import ngrok.NgdContext;
 import ngrok.NgdMsg;
 import ngrok.Protocol;
@@ -44,7 +44,7 @@ public class ClientHandler implements Runnable {
             } else if ("Auth".equals(protocol.Type)) {
                 handleAuth(socket, protocol);
             }
-        } catch (CloseSocketSignal e) {
+        } catch (ExitConnectSignal e) {
             // ignore
         } catch (Exception e) {
             log.error(e.toString());
@@ -52,33 +52,33 @@ public class ClientHandler implements Runnable {
         log.info("Connect exit: " + socket);
     }
 
-    private Protocol readProtocol(Socket socket) throws Exception {
-        PacketReader pr = new PacketReader(socket, context.timeout);
+    private Protocol readProtocol(Socket socket) throws ExitConnectSignal, IOException {
+        PacketReader pr = new PacketReader(socket, context.soTimeout);
         String msg = pr.read();
         if (msg == null) {
-            throw new CloseSocketSignal(socket);
+            throw new ExitConnectSignal(socket);
         }
         log.info("收到客户端信息：" + msg);
         Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
         return protocol;
     }
 
-    private void hanldeRegProxy(Socket socket, Protocol protocol) throws Exception {
+    private void hanldeRegProxy(Socket socket, Protocol protocol) throws ExitConnectSignal, Exception {
         String clientId = protocol.Payload.ClientId;
         ClientInfo client = context.getClientInfo(clientId);
         if (client == null) {
             // 客户端信息不存在
-            throw new CloseSocketSignal(socket);
+            throw new ExitConnectSignal(socket);
         }
         Request request = client.getRequestQueue().poll(60, TimeUnit.SECONDS);
         if (request == null) {
             // 队列超时，重新发起代理连接
             SocketHelper.sendpack(client.getControlSocket(), NgdMsg.ReqProxy());
-            throw new CloseSocketSignal(socket);
+            throw new ExitConnectSignal(socket);
         }
         if (request.getUrl() == null) {
             // 毒丸
-            throw new CloseSocketSignal(socket);
+            throw new ExitConnectSignal(socket);
         }
         try {
             SocketHelper.sendpack(socket, NgdMsg.StartProxy(request.getUrl()));
@@ -101,10 +101,10 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void handleAuth(Socket socket, Protocol protocol) throws Exception {
+    private void handleAuth(Socket socket, Protocol protocol) throws ExitConnectSignal, IOException {
         if (context.authToken != null && !context.authToken.equals(protocol.Payload.AuthToken)) {
             SocketHelper.sendpack(socket, NgdMsg.AuthResp(null, "Auth token check failure"));
-            throw new CloseSocketSignal(socket);
+            throw new ExitConnectSignal(socket);
         }
         String clientId = Util.MD5(String.valueOf(System.currentTimeMillis()));
         try {
@@ -117,7 +117,7 @@ public class ClientHandler implements Runnable {
                 if ("ReqTunnel".equals(protocol.Type)) {
                     handelReqTunnel(socket, protocol, clientId);
                 } else if ("Ping".equals(protocol.Type)) {
-                    handlePing(socket);
+                    handlePing(socket, clientId);
                 }
             }
         } finally {
@@ -127,18 +127,15 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void handelReqTunnel(Socket socket, Protocol protocol, String clientId) throws Exception {
+    private void handelReqTunnel(Socket socket, Protocol protocol, String clientId) throws ExitConnectSignal, IOException {
         if ("http".equals(protocol.Payload.Protocol) || "https".equals(protocol.Payload.Protocol)) {
             handelHttpReqTunnel(socket, protocol, clientId);
-            return;
-        }
-        if ("tcp".equals(protocol.Payload.Protocol)) {
+        } else if ("tcp".equals(protocol.Payload.Protocol)) {
             handelTcpReqTunnel(socket, protocol, clientId);
-            return;
         }
     }
 
-    private void handelHttpReqTunnel(Socket socket, Protocol protocol, String clientId) throws Exception {
+    private void handelHttpReqTunnel(Socket socket, Protocol protocol, String clientId) throws ExitConnectSignal, IOException {
         if (Util.isEmpty(protocol.Payload.Hostname)) {
             if (Util.isEmpty(protocol.Payload.Subdomain)) {
                 protocol.Payload.Subdomain = Util.getRandString(5);
@@ -150,7 +147,7 @@ public class ClientHandler implements Runnable {
             if (context.httpPort == null) {
                 String error = "The http tunnel " + url + " is registration failed, becase http is disabled.";
                 SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
-                throw new CloseSocketSignal(socket);
+                throw new ExitConnectSignal(socket);
             }
             if (context.httpPort != 80) {
                 url += ":" + context.httpPort;
@@ -159,7 +156,7 @@ public class ClientHandler implements Runnable {
             if (context.httpsPort == null) {
                 String error = "The https tunnel " + url + " is registration failed, becase https is disabled.";
                 SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
-                throw new CloseSocketSignal(socket);
+                throw new ExitConnectSignal(socket);
             }
             if (context.httpsPort != 443) {
                 url += ":" + context.httpsPort;
@@ -169,7 +166,7 @@ public class ClientHandler implements Runnable {
         SocketHelper.sendpack(socket, NgdMsg.NewTunnel(protocol.Payload.ReqId, url, protocol.Payload.Protocol, null));
     }
 
-    private void handelTcpReqTunnel(Socket socket, Protocol protocol, String clientId) throws Exception {
+    private void handelTcpReqTunnel(Socket socket, Protocol protocol, String clientId) throws ExitConnectSignal, IOException {
         String url = "tcp://" + context.domain + ":" + protocol.Payload.RemotePort;
         if (context.getTunnelInfo(url) != null) {
             context.getTunnelInfo(url).close();
@@ -181,7 +178,7 @@ public class ClientHandler implements Runnable {
         } catch (Exception e) {
             String error = "The tunnel " + url + " is already registered, becase the port " + protocol.Payload.RemotePort + " is occupied.";
             SocketHelper.sendpack(socket, NgdMsg.NewTunnel(null, null, null, error));
-            throw new CloseSocketSignal(socket);
+            throw new ExitConnectSignal(socket);
         }
         Thread thread = new Thread(new TcpListener(serverSocket, context));
         thread.setDaemon(true);
@@ -190,7 +187,9 @@ public class ClientHandler implements Runnable {
         SocketHelper.sendpack(socket, NgdMsg.NewTunnel(protocol.Payload.ReqId, url, protocol.Payload.Protocol, null));
     }
 
-    private void handlePing(Socket socket) throws IOException {
+    private void handlePing(Socket socket, String clientId) throws IOException {
+        ClientInfo clientInfo = context.getClientInfo(clientId);
+        clientInfo.setLastPingTime(System.currentTimeMillis());
         SocketHelper.sendpack(socket, NgdMsg.Pong());
     }
 }

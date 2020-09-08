@@ -26,6 +26,5 @@
 	"serverHost":"myngrok.com",
 	"serverPort":4443,
 	"authToken":"CMwClAfRttJtFJgo4jYh4PJ4giR8uJxhdkfcjOB1",
-	"enableLog":true,
 	"pingTime":10000
 }

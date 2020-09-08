@@ -11,6 +11,5 @@ public class NgConfig {
     String serverHost = "";
     int serverPort = 4443;
     String authToken;
-    boolean enableLog = true;
     long pingTime = 10000;
 }

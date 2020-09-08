@@ -50,7 +50,7 @@ public class Ngrok {
 
     public void start() {
         Socket socket = null;
-        long lastTime = System.currentTimeMillis();
+        long lastPingTime = System.currentTimeMillis();
 
         while (true) {
             if (context.getStatus() == NgContext.PENDING) {
@@ -64,7 +64,7 @@ public class Ngrok {
                     continue;
                 }
             } else if (context.getStatus() == NgContext.AUTHERIZED) {
-                if (System.currentTimeMillis() > lastTime + pingTime) {
+                if (System.currentTimeMillis() > lastPingTime + pingTime) {
                     try {
                         SocketHelper.sendpack(socket, NgMsg.Ping());
                     } catch (Exception e) {
@@ -72,7 +72,7 @@ public class Ngrok {
                         // 关闭套接字，读取此套接字的线程将退出阻塞
                         SocketHelper.safeClose(socket);
                     }
-                    lastTime = System.currentTimeMillis();
+                    lastPingTime = System.currentTimeMillis();
                 }
             } else if (context.getStatus() == NgContext.EXITED) {
                 // 停顿3秒后退出

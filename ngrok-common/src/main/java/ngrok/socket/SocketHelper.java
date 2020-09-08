@@ -120,7 +120,6 @@ public class SocketHelper {
     }
 
     public static void forward(Socket s1, Socket s2) throws IOException {
-        s1.setSoTimeout(0);
         InputStream is = s1.getInputStream();
         OutputStream os = s2.getOutputStream();
         int len;

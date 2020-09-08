@@ -7,9 +7,11 @@ public class NgdConfig {
     String domain = "";
     String host = "";
     int port = 4443;
-    int timeout = 120000;
+    /** 套接字超时时间8个小时 */
+    int soTimeout = 28800000;
+    /** 心跳超时时间2分种 */
+    int pingTimeout = 120000;
     Integer httpPort;
     Integer httpsPort;
     String authToken;
-    boolean enableLog = true;
 }
