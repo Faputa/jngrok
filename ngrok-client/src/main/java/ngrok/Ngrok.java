@@ -50,9 +50,12 @@ public class Ngrok {
 
     public void start() {
         Socket socket = null;
-        long lastPingTime = System.currentTimeMillis();
-
         while (true) {
+            if (context.getStatus() == NgContext.EXITED) {
+                // 停顿3秒后退出
+                Util.sleep(3000);
+                return;
+            }
             if (context.getStatus() == NgContext.PENDING) {
                 try {
                     socket = newControlConnect();
@@ -64,24 +67,15 @@ public class Ngrok {
                     continue;
                 }
             } else if (context.getStatus() == NgContext.AUTHERIZED) {
-                if (System.currentTimeMillis() > lastPingTime + pingTime) {
-                    try {
-                        SocketHelper.sendpack(socket, NgMsg.Ping());
-                    } catch (Exception e) {
-                        log.error(e.toString());
-                        // 关闭套接字，读取此套接字的线程将退出阻塞
-                        SocketHelper.safeClose(socket);
-                    }
-                    lastPingTime = System.currentTimeMillis();
+                try {
+                    SocketHelper.sendpack(socket, NgMsg.Ping());
+                } catch (Exception e) {
+                    log.error(e.toString());
+                    // 关闭套接字，读取此套接字的线程将退出阻塞
+                    SocketHelper.safeClose(socket);
                 }
-            } else if (context.getStatus() == NgContext.EXITED) {
-                // 停顿3秒后退出
-                Util.sleep(3000);
-                return;
-            } else if (context.getStatus() == NgContext.CONNECTED) {
-                // do nothing
             }
-            Util.sleep(1000);
+            Util.sleep(pingTime);
         }
     }
 

@@ -57,12 +57,11 @@ public class Ngrokd {
     }
 
     public void start() {
-        try {
-            Thread clientListener = null;
-            Thread httpListener = null;
-            Thread httpsListener = null;
-            long lastTime = System.currentTimeMillis();
-            while (true) {
+        Thread clientListener = null;
+        Thread httpListener = null;
+        Thread httpsListener = null;
+        while (true) {
+            try {
                 if (clientListener == null || !clientListener.isAlive()) {
                     clientListener = newDaemonThread(new ClientListener(context));
                 }
@@ -72,16 +71,12 @@ public class Ngrokd {
                 if (context.httpsPort != null && (httpsListener == null || !httpsListener.isAlive())) {
                     httpsListener = newDaemonThread(new HttpsListener(context));
                 }
-                // 关闭空闲和心跳超时的客户端
-                if (System.currentTimeMillis() > lastTime + 50000) {
-                    context.closeIdleClient();
-                    context.closePingTimeoutClient();
-                    lastTime = System.currentTimeMillis();
-                }
-                Util.sleep(10000);
+                context.closeIdleClient();
+                context.closePingTimeoutClient();
+            } catch (Exception e) {
+                log.error(e.toString(), e);
             }
-        } catch (Exception e) {
-            log.error(e.toString());
+            Util.sleep(10000);
         }
     }
 

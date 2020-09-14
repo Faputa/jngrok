@@ -17,6 +17,11 @@ public class ClientInfo {
     private List<Socket> outerSockets = Collections.synchronizedList(new ArrayList<>());
     private long lastPingTime;
 
+    public ClientInfo(Socket controlSocket) {
+        this.lastPingTime = System.currentTimeMillis();
+        this.controlSocket = controlSocket;
+    }
+
     public Socket getControlSocket() {
         return controlSocket;
     }

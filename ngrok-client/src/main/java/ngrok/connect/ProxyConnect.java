@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ngrok.ExitConnectSignal;
+import ngrok.ExitConnectException;
 import ngrok.NgContext;
 import ngrok.NgMsg;
 import ngrok.Protocol;
@@ -40,21 +40,21 @@ public class ProxyConnect implements Runnable {
             PacketReader pr = new PacketReader(socket);
             String msg = pr.read();
             if (msg == null) {
-                throw new ExitConnectSignal(socket);
+                throw new ExitConnectException(socket);
             }
             log.info("收到服务器信息：" + msg);
             Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
             if ("StartProxy".equals(protocol.Type)) {
                 handleStartProxy(socket, protocol);
             }
-        } catch (ExitConnectSignal e) {
+        } catch (ExitConnectException e) {
             // ignore
         } catch (Exception e) {
             log.error(e.toString());
         }
     }
 
-    private void handleStartProxy(Socket socket, Protocol protocol) throws ExitConnectSignal, IOException {
+    private void handleStartProxy(Socket socket, Protocol protocol) throws ExitConnectException, IOException {
         Tunnel tunnel = getTunnelByUrl(protocol.Payload.Url);
         if (tunnel == null) {
             String html = "没有找到对应的管道：" + protocol.Payload.Url;
@@ -63,7 +63,7 @@ public class ProxyConnect implements Runnable {
             header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
             header = header + html;
             SocketHelper.sendbuf(socket, header.getBytes());
-            throw new ExitConnectSignal(socket);
+            throw new ExitConnectException(socket);
         }
         log.info("建立本地连接：[host]={} [port]={}", tunnel.getLocalHost(), tunnel.getLocalPort());
         try (Socket localSocket = SocketHelper.newSocket(tunnel.getLocalHost(), tunnel.getLocalPort())) {
