@@ -32,19 +32,22 @@ public class TcpHandler implements Runnable {
         log.info("收到tcp请求");
         try (Socket socket = this.socket) {
             String url = "tcp://" + context.domain + ":" + socket.getLocalPort();
-            TunnelInfo tunnel = context.getTunnelInfo(url);
-            if (tunnel == null) {
+            TunnelInfo tunnelInfo = context.getTunnelInfo(url);
+            if (tunnelInfo == null) {
                 return;
             }
-            ClientInfo client = context.getClientInfo(tunnel.getClientId());
-            Request request = new Request();
-            request.setUrl(url);
-            request.setOuterSocket(socket);
-            client.getRequestQueue().put(request);
-            try (Socket proxySocket = request.getProxySocket(60, TimeUnit.SECONDS)) { // 最多等待60秒
-                SocketHelper.forward(socket, proxySocket);
-            } catch (Exception e) {
-                // ignore
+            ClientInfo clientInfo = context.getClientInfo(tunnelInfo.getClientId());
+            try {
+                Request request = new Request(url, socket);
+                clientInfo.addOuterThread(Thread.currentThread());
+                clientInfo.putRequest(request);
+                try (Socket proxySocket = request.getProxySocket(60, TimeUnit.SECONDS)) { // 最多等待60秒
+                    SocketHelper.forward(socket, proxySocket);
+                } catch (Exception e) {
+                    // ignore
+                }
+            } finally {
+                clientInfo.removeOuterThread(Thread.currentThread());
             }
         } catch (Exception e) {
             log.error(e.toString());

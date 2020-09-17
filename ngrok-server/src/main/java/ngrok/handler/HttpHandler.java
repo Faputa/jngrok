@@ -50,8 +50,8 @@ public class HttpHandler implements Runnable {
                     continue;
                 }
                 String url = protocol + "://" + head.get("Host");
-                TunnelInfo tunnel = context.getTunnelInfo(url);
-                if (tunnel == null) {
+                TunnelInfo tunnelInfo = context.getTunnelInfo(url);
+                if (tunnelInfo == null) {
                     String html = "Tunnel " + head.get("Host") + " not found";
                     String header = "HTTP/1.0 404 Not Found\r\n";
                     header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
@@ -59,16 +59,19 @@ public class HttpHandler implements Runnable {
                     SocketHelper.sendbuf(socket, header.getBytes());
                     break;
                 }
-                ClientInfo client = context.getClientInfo(tunnel.getClientId());
-                Request request = new Request();
-                request.setUrl(url);
-                request.setOuterSocket(socket);
-                client.getRequestQueue().put(request);
-                try (Socket proxySocket = request.getProxySocket(60, TimeUnit.SECONDS)) { // 最多等待60秒
-                    SocketHelper.sendbuf(proxySocket, buf);
-                    SocketHelper.forward(socket, proxySocket);
-                } catch (Exception e) {
-                    // ignore
+                ClientInfo clientInfo = context.getClientInfo(tunnelInfo.getClientId());
+                try {
+                    Request request = new Request(url, socket);
+                    clientInfo.addOuterThread(Thread.currentThread());
+                    clientInfo.putRequest(request);
+                    try (Socket proxySocket = request.getProxySocket(60, TimeUnit.SECONDS)) { // 最多等待60秒
+                        SocketHelper.sendbuf(proxySocket, buf);
+                        SocketHelper.forward(socket, proxySocket);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                } finally {
+                    clientInfo.removeOuterThread(Thread.currentThread());
                 }
                 break;
             }

@@ -1,12 +1,10 @@
 package ngrok;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import ngrok.model.Tunnel;
-import ngrok.socket.SocketHelper;
 
 public class NgContext {
 
@@ -14,35 +12,33 @@ public class NgContext {
     public int serverPort;
     public List<Tunnel> tunnelList;
     public String authToken;
+    public int soTimeout;
 
-    private List<Socket> localSockets = Collections.synchronizedList(new ArrayList<>());
-    private List<Socket> proxySockets = Collections.synchronizedList(new ArrayList<>());
+    private List<Thread> localThreads = Collections.synchronizedList(new ArrayList<>());
+    private List<Thread> proxyThreads = Collections.synchronizedList(new ArrayList<>());
 
-    public void addLocalSocket(Socket socket) {
-        localSockets.add(socket);
+    public synchronized void addLocalThread(Thread thread) {
+        localThreads.add(thread);
     }
 
-    public void removeLocalSocket(Socket socket) {
-        localSockets.remove(socket);
+    public synchronized void removeLocalThread(Thread thread) {
+        localThreads.remove(thread);
     }
 
-    public void addProxySocket(Socket socket) {
-        proxySockets.add(socket);
+    public synchronized void addProxyThread(Thread thread) {
+        proxyThreads.add(thread);
     }
 
-    public void removeProxySocket(Socket socket) {
-        proxySockets.remove(socket);
+    public synchronized void removeProxyThread(Thread thread) {
+        proxyThreads.remove(thread);
     }
 
-    public void closeLocalSockets() {
-        for (Socket socket : localSockets) {
-            SocketHelper.safeClose(socket);
+    public synchronized void clean() {
+        for (Thread thread : localThreads) {
+            thread.interrupt();
         }
-    }
-
-    public void closeProxySockets() {
-        for (Socket socket : proxySockets) {
-            SocketHelper.safeClose(socket);
+        for (Thread thread : proxyThreads) {
+            thread.interrupt();
         }
     }
 

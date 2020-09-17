@@ -11,5 +11,7 @@ public class NgConfig {
     String serverHost = "";
     int serverPort = 4443;
     String authToken;
+    /** 套接字超时时间8个小时 */
+    int soTimeout = 28800000;
     long pingTime = 10000;
 }

@@ -21,13 +21,17 @@ public class SocketHelper {
     private SocketHelper() {
     }
 
-    public static Socket newSocket(String host, int port) throws IOException {
-        return new Socket(host, port);
+    public static Socket newSocket(String host, int port, int timeout) throws IOException {
+        Socket socket = new Socket(host, port);
+        socket.setSoTimeout(timeout);
+        return socket;
     }
 
-    public static SSLSocket newSSLSocket(String host, int port) throws Exception {
+    public static SSLSocket newSSLSocket(String host, int port, int timeout) throws Exception {
         TrustAllSSLSocketFactory sf = new TrustAllSSLSocketFactory();
-        return sf.createSocket(host, port);
+        SSLSocket socket = sf.createSocket(host, port);
+        socket.setSoTimeout(timeout);
+        return socket;
     }
 
     public static ServerSocket newServerSocket(int port) throws IOException {
@@ -42,17 +46,23 @@ public class SocketHelper {
     }
 
     public static void safeClose(@Nullable Socket socket) {
+        if (socket == null) {
+            return;
+        }
         try {
             socket.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             // ignore
         }
     }
 
     public static void safeClose(@Nullable ServerSocket serverSocket) {
+        if (serverSocket == null) {
+            return;
+        }
         try {
             serverSocket.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             // ignore
         }
     }

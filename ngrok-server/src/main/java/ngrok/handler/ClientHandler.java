@@ -64,21 +64,30 @@ public class ClientHandler implements Runnable {
         return protocol;
     }
 
-    private void hanldeRegProxy(Socket socket, Protocol protocol) throws ExitConnectException, Exception {
+    private void hanldeRegProxy(Socket socket, Protocol protocol) throws ExitConnectException, IOException {
         String clientId = protocol.Payload.ClientId;
-        ClientInfo client = context.getClientInfo(clientId);
-        if (client == null) {
-            // 客户端信息不存在
+        ClientInfo clientInfo = context.getClientInfo(clientId);
+        if (clientInfo == null) {
             throw new ExitConnectException(socket);
         }
-        Request request = client.getRequestQueue().poll(60, TimeUnit.SECONDS);
+        try {
+            clientInfo.addProxyThread(Thread.currentThread());
+            processProxy(socket, clientInfo);
+        } finally {
+            clientInfo.removeProxyThread(Thread.currentThread());
+        }
+    }
+
+    private void processProxy(Socket socket, ClientInfo clientInfo) throws ExitConnectException, IOException {
+        Request request;
+        try {
+            request = clientInfo.pollRequest(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new ExitConnectException(socket);
+        }
         if (request == null) {
             // 队列超时，重新发起代理连接
-            SocketHelper.sendpack(client.getControlSocket(), NgdMsg.ReqProxy());
-            throw new ExitConnectException(socket);
-        }
-        if (request.getUrl() == null) {
-            // 毒丸
+            SocketHelper.sendpack(clientInfo.getControlSocket(), NgdMsg.ReqProxy());
             throw new ExitConnectException(socket);
         }
         try {
@@ -88,15 +97,8 @@ public class ClientHandler implements Runnable {
             log.error(e.toString());
         }
         try (Socket outerSocket = request.getOuterSocket()) {
-            try {
-                client.addProxySocket(socket);
-                client.addOuterSocket(outerSocket);
-                SocketHelper.sendpack(client.getControlSocket(), NgdMsg.ReqProxy());
-                SocketHelper.forward(socket, outerSocket);
-            } finally {
-                client.removeProxySocket(socket);
-                client.removeOuterSocket(outerSocket);
-            }
+            SocketHelper.sendpack(clientInfo.getControlSocket(), NgdMsg.ReqProxy());
+            SocketHelper.forward(socket, outerSocket);
         } catch (Exception e) {
             // ignore
         }
@@ -172,7 +174,7 @@ public class ClientHandler implements Runnable {
         String url = "tcp://" + context.domain + ":" + protocol.Payload.RemotePort;
         if (context.getTunnelInfo(url) != null) {
             context.getTunnelInfo(url).close();
-            Util.sleep(1000);
+            Util.safeSleep(1000);
         }
         ServerSocket serverSocket;
         try {

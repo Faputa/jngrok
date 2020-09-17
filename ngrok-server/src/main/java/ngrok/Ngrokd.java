@@ -76,7 +76,7 @@ public class Ngrokd {
             } catch (Exception e) {
                 log.error(e.toString(), e);
             }
-            Util.sleep(10000);
+            Util.safeSleep(10000);
         }
     }
 

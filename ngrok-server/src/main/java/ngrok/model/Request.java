@@ -11,20 +11,17 @@ public class Request {
     private Socket outerSocket;
     private BlockingQueue<Socket> proxySocket = new ArrayBlockingQueue<>(1);
 
+    public Request(String url, Socket outerSocket) {
+        this.url = url;
+        this.outerSocket = outerSocket;
+    }
+
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
     public Socket getOuterSocket() {
         return outerSocket;
-    }
-
-    public void setOuterSocket(Socket outerSocket) {
-        this.outerSocket = outerSocket;
     }
 
     public Socket getProxySocket(long timeout, TimeUnit unit) throws InterruptedException {

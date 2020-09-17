@@ -49,7 +49,7 @@ public class Util {
         return getTime("yyyy-MM-dd HH:mm:ss");
     }
 
-    public static void sleep(long millis) {
+    public static void safeSleep(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {

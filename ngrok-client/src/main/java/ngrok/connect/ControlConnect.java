@@ -48,8 +48,7 @@ public class ControlConnect implements Runnable {
             context.setStatus(NgContext.PENDING);
         } finally {
             log.info("Connect exit: " + socket);
-            context.closeLocalSockets();
-            context.closeProxySockets();
+            context.clean();
         }
     }
 
@@ -58,7 +57,7 @@ public class ControlConnect implements Runnable {
     }
 
     private Protocol readProtocol(Socket socket) throws ExitConnectException, IOException {
-        PacketReader pr = new PacketReader(socket);
+        PacketReader pr = new PacketReader(socket, context.soTimeout);
         String msg = pr.read();
         if (msg == null) {
             // 服务器主动关闭连接，正常退出
@@ -99,7 +98,7 @@ public class ControlConnect implements Runnable {
 
     private void handleReqProxy(Socket socket, String clientId) throws IOException {
         try {
-            Socket remoteSocket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
+            Socket remoteSocket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort, context.soTimeout);
             Thread thread = new Thread(new ProxyConnect(remoteSocket, clientId, context));
             thread.setDaemon(true);
             thread.start();

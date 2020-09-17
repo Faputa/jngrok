@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import ngrok.socket.SocketHelper;
 
@@ -13,8 +14,8 @@ public class ClientInfo {
 
     private Socket controlSocket;
     private BlockingQueue<Request> requestQueue = new LinkedBlockingQueue<>();
-    private List<Socket> proxySockets = Collections.synchronizedList(new ArrayList<>());
-    private List<Socket> outerSockets = Collections.synchronizedList(new ArrayList<>());
+    private List<Thread> proxyThreads = Collections.synchronizedList(new ArrayList<>());
+    private List<Thread> outerThreads = Collections.synchronizedList(new ArrayList<>());
     private long lastPingTime;
 
     public ClientInfo(Socket controlSocket) {
@@ -26,28 +27,28 @@ public class ClientInfo {
         return controlSocket;
     }
 
-    public void setControlSocket(Socket controlSocket) {
-        this.controlSocket = controlSocket;
+    public void putRequest(Request request) throws InterruptedException {
+        this.requestQueue.put(request);
     }
 
-    public BlockingQueue<Request> getRequestQueue() {
-        return requestQueue;
+    public Request pollRequest(long timeout, TimeUnit unit) throws InterruptedException {
+        return requestQueue.poll(timeout, unit);
     }
 
-    public void addProxySocket(Socket socket) {
-        proxySockets.add(socket);
+    public synchronized void addProxyThread(Thread thread) {
+        proxyThreads.add(thread);
     }
 
-    public void removeProxySocket(Socket socket) {
-        proxySockets.remove(socket);
+    public synchronized void removeProxyThread(Thread thread) {
+        proxyThreads.remove(thread);
     }
 
-    public void addOuterSocket(Socket socket) {
-        outerSockets.add(socket);
+    public synchronized void addOuterThread(Thread thread) {
+        outerThreads.add(thread);
     }
 
-    public void removeOuterSocket(Socket socket) {
-        outerSockets.remove(socket);
+    public synchronized void removeOuterThread(Thread thread) {
+        outerThreads.remove(thread);
     }
 
     public long getLastPingTime() {
@@ -62,17 +63,12 @@ public class ClientInfo {
         SocketHelper.safeClose(controlSocket);
     }
 
-    public void clean() {
-        try {
-            requestQueue.put(new Request());// 毒丸
-        } catch (InterruptedException e) {
-            // ignore
+    public synchronized void clean() {
+        for (Thread thread : proxyThreads) {
+            thread.interrupt();
         }
-        for (Socket socket : proxySockets) {
-            SocketHelper.safeClose(socket);
-        }
-        for (Socket socket : outerSockets) {
-            SocketHelper.safeClose(socket);
+        for (Thread thread : outerThreads) {
+            thread.interrupt();
         }
     }
 }

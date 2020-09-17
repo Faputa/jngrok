@@ -57,6 +57,9 @@ public class NgdContext {
      * 清理客户端
      */
     public synchronized void cleanClient(String clientId) {
+        ClientInfo clientInfo = clientInfoMap.get(clientId);
+        assert clientInfo != null;
+        clientInfo.clean();
         clientInfoMap.remove(clientId);
         cleanTunnelInfo(clientId);
     }

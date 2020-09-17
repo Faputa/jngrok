@@ -36,8 +36,9 @@ public class ProxyConnect implements Runnable {
     @Override
     public void run() {
         try (Socket socket = this.socket) {
+            context.addProxyThread(Thread.currentThread());
             SocketHelper.sendpack(socket, NgMsg.RegProxy(clientId));
-            PacketReader pr = new PacketReader(socket);
+            PacketReader pr = new PacketReader(socket, context.soTimeout);
             String msg = pr.read();
             if (msg == null) {
                 throw new ExitConnectException(socket);
@@ -51,6 +52,8 @@ public class ProxyConnect implements Runnable {
             // ignore
         } catch (Exception e) {
             log.error(e.toString());
+        } finally {
+            context.removeProxyThread(Thread.currentThread());
         }
     }
 
@@ -66,19 +69,14 @@ public class ProxyConnect implements Runnable {
             throw new ExitConnectException(socket);
         }
         log.info("建立本地连接：[host]={} [port]={}", tunnel.getLocalHost(), tunnel.getLocalPort());
-        try (Socket localSocket = SocketHelper.newSocket(tunnel.getLocalHost(), tunnel.getLocalPort())) {
-            Thread thread = new Thread(new LocalConnect(localSocket, socket));
+        try (Socket localSocket = SocketHelper.newSocket(tunnel.getLocalHost(), tunnel.getLocalPort(), context.soTimeout)) {
+            Thread thread = new Thread(new LocalConnect(localSocket, socket, context));
             thread.setDaemon(true);
             thread.start();
             try {
-                context.addLocalSocket(localSocket);
-                context.addProxySocket(socket);
                 SocketHelper.forward(socket, localSocket);
             } catch (Exception e) {
                 // ignore
-            } finally {
-                context.removeLocalSocket(localSocket);
-                context.removeProxySocket(socket);
             }
         } catch (IOException e) {
             log.error("本地连接建立失败：[host]={} [port]={}", tunnel.getLocalHost(), tunnel.getLocalPort());

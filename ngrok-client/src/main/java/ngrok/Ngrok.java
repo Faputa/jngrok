@@ -36,12 +36,16 @@ public class Ngrok {
         context.authToken = authToken;
     }
 
+    public void setSoTimeout(int soTimeout) {
+        context.soTimeout = soTimeout;
+    }
+
     public void setPingTime(long pingTime) {
         this.pingTime = pingTime;
     }
 
     private Socket newControlConnect() throws Exception {
-        Socket socket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort);
+        Socket socket = SocketHelper.newSSLSocket(context.serverHost, context.serverPort, context.soTimeout);
         Thread thread = new Thread(new ControlConnect(socket, context));
         thread.setDaemon(true);
         thread.start();
@@ -53,7 +57,7 @@ public class Ngrok {
         while (true) {
             if (context.getStatus() == NgContext.EXITED) {
                 // 停顿3秒后退出
-                Util.sleep(3000);
+                Util.safeSleep(3000);
                 return;
             }
             if (context.getStatus() == NgContext.PENDING) {
@@ -63,7 +67,7 @@ public class Ngrok {
                 } catch (Exception e) {
                     log.error(e.toString());
                     // 断线重连频率10秒一次
-                    Util.sleep(10000);
+                    Util.safeSleep(10000);
                     continue;
                 }
             } else if (context.getStatus() == NgContext.AUTHERIZED) {
@@ -75,7 +79,7 @@ public class Ngrok {
                     SocketHelper.safeClose(socket);
                 }
             }
-            Util.sleep(pingTime);
+            Util.safeSleep(pingTime);
         }
     }
 
