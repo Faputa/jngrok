@@ -124,7 +124,7 @@ public class ClientHandler implements Runnable {
             }
         } finally {
             log.info("客户端 {} 退出", clientId);
-            context.closeClient(clientId);
+            context.cleanClient(clientId);
         }
     }
 

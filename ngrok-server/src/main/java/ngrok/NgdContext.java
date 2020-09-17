@@ -54,12 +54,9 @@ public class NgdContext {
     }
 
     /**
-     * 关闭客户端
+     * 清理客户端
      */
-    public synchronized void closeClient(String clientId) {
-        ClientInfo clientInfo = clientInfoMap.get(clientId);
-        assert clientInfo != null;
-        clientInfo.close();
+    public synchronized void cleanClient(String clientId) {
         clientInfoMap.remove(clientId);
         cleanTunnelInfo(clientId);
     }

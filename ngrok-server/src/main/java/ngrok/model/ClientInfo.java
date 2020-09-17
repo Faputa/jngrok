@@ -59,6 +59,10 @@ public class ClientInfo {
     }
 
     public void close() {
+        SocketHelper.safeClose(controlSocket);
+    }
+
+    public void clean() {
         try {
             requestQueue.put(new Request());// 毒丸
         } catch (InterruptedException e) {
@@ -70,6 +74,5 @@ public class ClientInfo {
         for (Socket socket : outerSockets) {
             SocketHelper.safeClose(socket);
         }
-        SocketHelper.safeClose(controlSocket);
     }
 }
