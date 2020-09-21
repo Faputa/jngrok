@@ -27,5 +27,6 @@
 	"serverPort":4443,
 	"authToken":"CMwClAfRttJtFJgo4jYh4PJ4giR8uJxhdkfcjOB1",
 	"soTimeout":28800000,
-	"pingTime":10000
+	"pingTime":10000,
+	"useSsl":true
 }

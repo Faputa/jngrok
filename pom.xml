@@ -6,7 +6,7 @@
 
     <groupId>io.github.kinocastle</groupId>
     <artifactId>jngrok</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <modules>
         <module>ngrok-common</module>
         <module>ngrok-client</module>
