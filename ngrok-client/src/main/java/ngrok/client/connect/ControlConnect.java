@@ -35,9 +35,10 @@ public class ControlConnect implements Runnable {
     public void run() {
         try (Socket socket = this.socket) {
             auth(socket);
-            Protocol protocol = readProtocol(socket);
+            PacketReader pr = new PacketReader(socket, context.soTimeout);
+            Protocol protocol = readProtocol(pr);
             if ("AuthResp".equals(protocol.Type)) {
-                handleAuthResp(socket, protocol);
+                handleAuthResp(socket, pr, protocol);
             }
         } catch (ExitConnectException e) {
             // 正常退出
@@ -56,8 +57,7 @@ public class ControlConnect implements Runnable {
         SocketHelper.sendpack(socket, Message.Auth(context.authToken));
     }
 
-    private Protocol readProtocol(Socket socket) throws ExitConnectException, IOException {
-        PacketReader pr = new PacketReader(socket, context.soTimeout);
+    private Protocol readProtocol(PacketReader pr) throws ExitConnectException, IOException {
         String msg = pr.read();
         if (msg == null) {
             // 服务器主动关闭连接，正常退出
@@ -68,7 +68,7 @@ public class ControlConnect implements Runnable {
         return protocol;
     }
 
-    private void handleAuthResp(Socket socket, Protocol protocol) throws ExitConnectException, IOException {
+    private void handleAuthResp(Socket socket, PacketReader pr, Protocol protocol) throws ExitConnectException, IOException {
         if (Util.isNotEmpty(protocol.Payload.Error)) {
             log.error("客户端认证失败：" + protocol.Payload.Error);
             throw new ExitConnectException(socket);
@@ -79,7 +79,7 @@ public class ControlConnect implements Runnable {
         reqTunnel(socket);
         // 客户端注册成功，接下来处理数据代理、管道注册和心跳
         while (true) {
-            protocol = readProtocol(socket);
+            protocol = readProtocol(pr);
             if ("ReqProxy".equals(protocol.Type)) {
                 handleReqProxy(socket, clientId);
             } else if ("NewTunnel".equals(protocol.Type)) {

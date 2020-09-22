@@ -23,8 +23,10 @@ public class LocalConnect implements Runnable, Exitable {
 
     @Override
     public void run() {
-        try (Socket localSocket = this.localSocket;
-             Socket remoteSocket = this.remoteSocket) {
+        try (
+            Socket localSocket = this.localSocket;
+            Socket remoteSocket = this.remoteSocket
+        ) {
             tunnel.addLocalConnect(this);
             SocketHelper.forward(localSocket, remoteSocket);
         } catch (Exception e) {

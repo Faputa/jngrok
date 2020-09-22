@@ -40,11 +40,12 @@ public class ClientHandler implements Runnable, Exitable {
     @Override
     public void run() {
         try (Socket socket = this.socket) {
-            Protocol protocol = readProtocol(socket);
+            PacketReader pr = new PacketReader(socket, context.soTimeout);
+            Protocol protocol = readProtocol(pr);
             if ("RegProxy".equals(protocol.Type)) {
                 hanldeRegProxy(socket, protocol);
             } else if ("Auth".equals(protocol.Type)) {
-                handleAuth(socket, protocol);
+                handleAuth(socket, pr, protocol);
             }
         } catch (ExitConnectException e) {
             // ignore
@@ -54,8 +55,7 @@ public class ClientHandler implements Runnable, Exitable {
         log.info("Connect exit: " + socket);
     }
 
-    private Protocol readProtocol(Socket socket) throws ExitConnectException, IOException {
-        PacketReader pr = new PacketReader(socket, context.soTimeout);
+    private Protocol readProtocol(PacketReader pr) throws ExitConnectException, IOException {
         String msg = pr.read();
         if (msg == null) {
             throw new ExitConnectException(socket);
@@ -105,7 +105,7 @@ public class ClientHandler implements Runnable, Exitable {
         }
     }
 
-    private void handleAuth(Socket socket, Protocol protocol) throws ExitConnectException, IOException {
+    private void handleAuth(Socket socket, PacketReader pr, Protocol protocol) throws ExitConnectException, IOException {
         if (context.authToken != null && !context.authToken.equals(protocol.Payload.AuthToken)) {
             SocketHelper.sendpack(socket, Message.AuthResp(null, "Auth token check failure"));
             throw new ExitConnectException(socket);
@@ -118,7 +118,7 @@ public class ClientHandler implements Runnable, Exitable {
             SocketHelper.sendpack(socket, Message.ReqProxy());
             // 客户端注册成功，接下来接收管道注册和心跳
             while (true) {
-                protocol = readProtocol(socket);
+                protocol = readProtocol(pr);
                 if ("ReqTunnel".equals(protocol.Type)) {
                     handelReqTunnel(socket, protocol, clientId);
                 } else if ("Ping".equals(protocol.Type)) {
