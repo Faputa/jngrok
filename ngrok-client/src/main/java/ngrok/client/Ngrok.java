@@ -93,6 +93,8 @@ public class Ngrok {
         String filename = args.length > 0 ? args[0] : "client.json";
         String json = FileUtil.readTextFile("classpath:" + filename);
         Config config = GsonUtil.toBean(json, Config.class);
+        log.info("启动客户端：{}", GsonUtil.toJson(config));
+
         Ngrok ngrok = new Ngrok();
         ngrok.setTunnelList(config.tunnelList);
         ngrok.setServerHost(config.serverHost);

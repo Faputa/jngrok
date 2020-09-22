@@ -88,6 +88,7 @@ public class Ngrokd {
         String filename = args.length > 0 ? args[0] : "server.json";
         String json = FileUtil.readTextFile("classpath:" + filename);
         Config config = GsonUtil.toBean(json, Config.class);
+        log.info("启动服务器：{}", GsonUtil.toJson(config));
 
         SSLContextUtil.createDefaultSSLContext(FileUtil.getFileStream(config.sslKeyStore), config.sslKeyStorePassword);
 
