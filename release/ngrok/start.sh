@@ -1,2 +1,3 @@
-DIR=$(dirname $0)
-nohup java -Xbootclasspath/a:$DIR -jar $DIR/ngrok.jar >/dev/null 2>&1 &
+app=ngrok.jar
+dir=$(dirname $0)
+nohup java -Xbootclasspath/a:$dir -jar $dir/$app >/dev/null 2>&1 &
