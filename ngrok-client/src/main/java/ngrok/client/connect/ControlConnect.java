@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import ngrok.client.Context;
 import ngrok.client.Message;
 import ngrok.client.model.Tunnel;
-import ngrok.common.ExitConnectException;
+import ngrok.common.SimpleException;
 import ngrok.common.Protocol;
 import ngrok.socket.PacketReader;
 import ngrok.socket.SocketHelper;
@@ -40,7 +40,7 @@ public class ControlConnect implements Runnable {
             if ("AuthResp".equals(protocol.Type)) {
                 handleAuthResp(socket, pr, protocol);
             }
-        } catch (ExitConnectException e) {
+        } catch (SimpleException e) {
             // 正常退出
             context.setStatus(Context.EXITED);
         } catch (Exception e) {
@@ -57,21 +57,21 @@ public class ControlConnect implements Runnable {
         SocketHelper.sendpack(socket, Message.Auth(context.authToken));
     }
 
-    private Protocol readProtocol(PacketReader pr) throws ExitConnectException, IOException {
+    private Protocol readProtocol(PacketReader pr) throws SimpleException, IOException {
         String msg = pr.read();
         if (msg == null) {
             // 服务器主动关闭连接，正常退出
-            throw new ExitConnectException(socket);
+            throw new SimpleException();
         }
         log.info("收到服务器信息：" + msg);
         Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
         return protocol;
     }
 
-    private void handleAuthResp(Socket socket, PacketReader pr, Protocol protocol) throws ExitConnectException, IOException {
+    private void handleAuthResp(Socket socket, PacketReader pr, Protocol protocol) throws SimpleException, IOException {
         if (Util.isNotEmpty(protocol.Payload.Error)) {
             log.warn("客户端认证失败：" + protocol.Payload.Error);
-            throw new ExitConnectException(socket);
+            throw new SimpleException();
         }
         String clientId = protocol.Payload.ClientId;
         log.info("客户端认证成功：" + clientId);
@@ -109,10 +109,10 @@ public class ControlConnect implements Runnable {
         }
     }
 
-    private void handleNewTunnel(Socket socket, Protocol protocol) throws ExitConnectException, IOException {
+    private void handleNewTunnel(Socket socket, Protocol protocol) throws SimpleException, IOException {
         if (Util.isNotEmpty(protocol.Payload.Error)) {
             log.warn("管道注册失败：" + protocol.Payload.Error);
-            throw new ExitConnectException(socket);
+            throw new SimpleException();
         }
         log.info("管道注册成功：" + protocol.Payload.Url);
     }

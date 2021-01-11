@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import ngrok.client.Context;
 import ngrok.client.Message;
 import ngrok.client.model.Tunnel;
-import ngrok.common.ExitConnectException;
+import ngrok.common.SimpleException;
 import ngrok.common.Exitable;
 import ngrok.common.Protocol;
 import ngrok.socket.PacketReader;
@@ -43,14 +43,14 @@ public class ProxyConnect implements Runnable, Exitable {
             PacketReader pr = new PacketReader(socket, context.soTimeout);
             String msg = pr.read();
             if (msg == null) {
-                throw new ExitConnectException(socket);
+                throw new SimpleException();
             }
             log.info("收到服务器信息：" + msg);
             Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
             if ("StartProxy".equals(protocol.Type)) {
                 handleStartProxy(socket, protocol);
             }
-        } catch (ExitConnectException e) {
+        } catch (SimpleException e) {
             // ignore
         } catch (Exception e) {
             log.error(e.toString(), e);
@@ -59,7 +59,7 @@ public class ProxyConnect implements Runnable, Exitable {
         }
     }
 
-    private void handleStartProxy(Socket socket, Protocol protocol) throws ExitConnectException, IOException {
+    private void handleStartProxy(Socket socket, Protocol protocol) throws SimpleException, IOException {
         Tunnel tunnel = getTunnelByUrl(protocol.Payload.Url);
         if (tunnel == null) {
             String html = "没有找到对应的管道：" + protocol.Payload.Url;
@@ -68,7 +68,7 @@ public class ProxyConnect implements Runnable, Exitable {
             header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
             header = header + html;
             SocketHelper.sendbuf(socket, header.getBytes());
-            throw new ExitConnectException(socket);
+            throw new SimpleException();
         }
         log.info("建立本地连接：[host]={} [port]={}", tunnel.localHost, tunnel.localPort);
         try (Socket localSocket = SocketHelper.newSocket(tunnel.localHost, tunnel.localPort, context.soTimeout)) {
