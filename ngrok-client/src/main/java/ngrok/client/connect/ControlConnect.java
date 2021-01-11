@@ -45,7 +45,7 @@ public class ControlConnect implements Runnable {
             context.setStatus(Context.EXITED);
         } catch (Exception e) {
             // 异常退出，准备重连
-            log.error(e.toString());
+            log.error(e.toString(), e);
             context.setStatus(Context.PENDING);
         } finally {
             log.info("Connect exit: " + socket);
@@ -70,7 +70,7 @@ public class ControlConnect implements Runnable {
 
     private void handleAuthResp(Socket socket, PacketReader pr, Protocol protocol) throws ExitConnectException, IOException {
         if (Util.isNotEmpty(protocol.Payload.Error)) {
-            log.error("客户端认证失败：" + protocol.Payload.Error);
+            log.warn("客户端认证失败：" + protocol.Payload.Error);
             throw new ExitConnectException(socket);
         }
         String clientId = protocol.Payload.ClientId;
@@ -105,13 +105,13 @@ public class ControlConnect implements Runnable {
             thread.setDaemon(true);
             thread.start();
         } catch (Exception e) {
-            log.error(e.toString());
+            log.error(e.toString(), e);
         }
     }
 
     private void handleNewTunnel(Socket socket, Protocol protocol) throws ExitConnectException, IOException {
         if (Util.isNotEmpty(protocol.Payload.Error)) {
-            log.error("管道注册失败：" + protocol.Payload.Error);
+            log.warn("管道注册失败：" + protocol.Payload.Error);
             throw new ExitConnectException(socket);
         }
         log.info("管道注册成功：" + protocol.Payload.Url);

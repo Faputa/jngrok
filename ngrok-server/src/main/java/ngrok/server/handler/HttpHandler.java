@@ -77,7 +77,7 @@ public class HttpHandler implements Runnable, Exitable {
                 break;
             }
         } catch (Exception e) {
-            log.error(e.toString());
+            log.error(e.toString(), e);
         }
     }
 

@@ -53,7 +53,7 @@ public class ProxyConnect implements Runnable, Exitable {
         } catch (ExitConnectException e) {
             // ignore
         } catch (Exception e) {
-            log.error(e.toString());
+            log.error(e.toString(), e);
         } finally {
             context.removeProxyConnect(this);
         }
@@ -63,7 +63,7 @@ public class ProxyConnect implements Runnable, Exitable {
         Tunnel tunnel = getTunnelByUrl(protocol.Payload.Url);
         if (tunnel == null) {
             String html = "没有找到对应的管道：" + protocol.Payload.Url;
-            log.error(html);
+            log.warn(html);
             String header = "HTTP/1.0 404 Not Found\r\n";
             header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
             header = header + html;
@@ -81,7 +81,7 @@ public class ProxyConnect implements Runnable, Exitable {
                 // ignore
             }
         } catch (IOException e) {
-            log.error("本地连接建立失败：[host]={} [port]={}", tunnel.localHost, tunnel.localPort);
+            log.warn("本地连接建立失败：[host]={} [port]={}", tunnel.localHost, tunnel.localPort);
             String html = FileUtil.readTextFile("classpath:502.html")
             .replace("{url}", protocol.Payload.Url)
             .replace("{localHost}", tunnel.localHost)

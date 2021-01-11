@@ -71,7 +71,7 @@ public class Ngrok {
                     socket = newControlConnect();
                     context.setStatus(Context.CONNECTED);
                 } catch (Exception e) {
-                    log.error(e.toString());
+                    log.error(e.toString(), e);
                     // 断线重连频率10秒一次
                     Util.safeSleep(10000);
                     continue;
@@ -80,7 +80,7 @@ public class Ngrok {
                 try {
                     SocketHelper.sendpack(socket, Message.Ping());
                 } catch (Exception e) {
-                    log.error(e.toString());
+                    log.error(e.toString(), e);
                     // 关闭套接字，读取此套接字的线程将退出阻塞
                     SocketHelper.safeClose(socket);
                 }

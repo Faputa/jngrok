@@ -50,7 +50,7 @@ public class ClientHandler implements Runnable, Exitable {
         } catch (ExitConnectException e) {
             // ignore
         } catch (Exception e) {
-            log.error(e.toString());
+            log.error(e.toString(), e);
         }
         log.info("Connect exit: " + socket);
     }
@@ -95,7 +95,7 @@ public class ClientHandler implements Runnable, Exitable {
             SocketHelper.sendpack(socket, Message.StartProxy(request.getUrl()));
             request.setProxySocket(socket);
         } catch (Exception e) {
-            log.error(e.toString());
+            log.error(e.toString(), e);
         }
         try (Socket outerSocket = request.getOuterSocket()) {
             SocketHelper.sendpack(client.getControlSocket(), Message.ReqProxy());

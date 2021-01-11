@@ -51,7 +51,7 @@ public class TcpHandler implements Runnable, Exitable {
                 tunnel.removeOuterHandler(this);
             }
         } catch (Exception e) {
-            log.error(e.toString());
+            log.error(e.toString(), e);
         }
     }
 

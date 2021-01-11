@@ -39,7 +39,7 @@ public class ClientListener implements Runnable {
                 thread.start();
             }
         } catch (IOException e) {
-            log.error(e.toString());
+            log.error(e.toString(), e);
         }
     }
 }
