@@ -9,10 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-public class Util {
-
-    private Util() {
-    }
+public abstract class Util {
 
     public static String getRandString(int len) {
         final String str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";

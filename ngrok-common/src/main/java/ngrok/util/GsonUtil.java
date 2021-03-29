@@ -1,9 +1,6 @@
 package ngrok.util;
 
-public class GsonUtil {
-
-    private GsonUtil() {
-    }
+public abstract class GsonUtil {
 
     private static com.google.gson.GsonBuilder builder = new com.google.gson.GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss");
 

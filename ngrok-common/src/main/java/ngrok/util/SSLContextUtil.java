@@ -4,10 +4,7 @@ import javax.net.ssl.*;
 import java.io.InputStream;
 import java.security.KeyStore;
 
-public class SSLContextUtil {
-
-    private SSLContextUtil() {
-    }
+public abstract class SSLContextUtil {
 
     public static void createDefaultSSLContext(InputStream keyStream, String keyPassword) throws Exception {
         createDefaultSSLContext(keyStream, keyPassword.toCharArray(), null, null);

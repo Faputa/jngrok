@@ -4,10 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class ByteUtil {
-
-    private ByteUtil() {
-    }
+public abstract class ByteUtil {
 
     public static String bytesToHex(byte[] bytes) {
         final char[] hexArray = "0123456789ABCDEF".toCharArray();

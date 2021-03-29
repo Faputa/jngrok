@@ -8,10 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-public class FileUtil {
-
-    private FileUtil() {
-    }
+public abstract class FileUtil {
 
     public static InputStream getFileStream(String name) throws FileNotFoundException {
         if (name.toLowerCase().startsWith("classpath:")) {
