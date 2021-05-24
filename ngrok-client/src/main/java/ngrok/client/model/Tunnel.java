@@ -1,8 +1,6 @@
 package ngrok.client.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.gson.annotations.Expose;
 
@@ -17,17 +15,17 @@ public class Tunnel {
     @Expose public String localHost;
     @Expose public int localPort;
 
-    private List<Exitable> localConnects = Collections.synchronizedList(new ArrayList<>());
+    private CopyOnWriteArrayList<Exitable> localConnects = new CopyOnWriteArrayList<>();
 
-    public synchronized void addLocalConnect(Exitable connect) {
+    public void addLocalConnect(Exitable connect) {
         localConnects.add(connect);
     }
 
-    public synchronized void removeLocalConnect(Exitable connect) {
+    public void removeLocalConnect(Exitable connect) {
         localConnects.remove(connect);
     }
 
-    public synchronized void clean() {
+    public void clean() {
         for (Exitable connect : localConnects) {
             connect.exit();
         }

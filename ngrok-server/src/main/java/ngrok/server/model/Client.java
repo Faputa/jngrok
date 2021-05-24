@@ -1,10 +1,7 @@
 package ngrok.server.model;
 
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -15,8 +12,8 @@ public class Client {
 
     private Socket controlSocket;
     private long lastPingTime;
-    private BlockingQueue<Request> requestQueue = new LinkedBlockingQueue<>();
-    private List<Exitable> proxyHandlers = Collections.synchronizedList(new ArrayList<>());
+    private LinkedBlockingQueue<Request> requestQueue = new LinkedBlockingQueue<>();
+    private CopyOnWriteArrayList<Exitable> proxyHandlers = new CopyOnWriteArrayList<>();
 
     public Client(Socket controlSocket) {
         this.lastPingTime = System.currentTimeMillis();
@@ -47,15 +44,15 @@ public class Client {
         SocketHelper.safeClose(controlSocket);
     }
 
-    public synchronized void addProxyHandler(Exitable handler) {
+    public void addProxyHandler(Exitable handler) {
         proxyHandlers.add(handler);
     }
 
-    public synchronized void removeProxyHandler(Exitable handler) {
+    public void removeProxyHandler(Exitable handler) {
         proxyHandlers.remove(handler);
     }
 
-    public synchronized void clean() {
+    public void clean() {
         for (Exitable handler : proxyHandlers) {
             handler.exit();
         }

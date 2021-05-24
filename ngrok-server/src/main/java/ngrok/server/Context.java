@@ -1,11 +1,9 @@
 package ngrok.server;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import ngrok.server.model.Client;
 import ngrok.server.model.Tunnel;
@@ -23,15 +21,15 @@ public class Context {
     public boolean useSsl;
 
     /** Map<clientId, client> */
-    private Map<String, Client> clientMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Client> clientMap = new ConcurrentHashMap<>();
     /** Map<url, tunnel> */
-    private Map<String, Tunnel> tunnelMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Tunnel> tunnelMap = new ConcurrentHashMap<>();
 
     public Client getClient(String clientId) {
         return clientMap.get(clientId);
     }
 
-    public synchronized void putClient(String clientId, Client client) {
+    public void putClient(String clientId, Client client) {
         clientMap.put(clientId, client);
     }
 
@@ -39,25 +37,23 @@ public class Context {
         return tunnelMap.get(url);
     }
 
-    public synchronized void putTunnel(String url, Tunnel tunnel) {
+    public void putTunnel(String url, Tunnel tunnel) {
         tunnelMap.put(url, tunnel);
     }
 
     private void cleanTunnel(String clientId) {
-        Iterator<Entry<String, Tunnel>> it = tunnelMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Tunnel ti = it.next().getValue();
-            if (clientId.equals(ti.getClientId())) {
-                ti.close();
-                it.remove();
+        tunnelMap.forEach((_clientId, tunnel) -> {
+            if (Objects.equals(clientId, _clientId)) {
+                tunnel.close();
+                tunnelMap.remove(_clientId);
             }
-        }
+        });
     }
 
     /**
      * 清理客户端
      */
-    public synchronized void cleanClient(String clientId) {
+    public void cleanClient(String clientId) {
         Client client = clientMap.get(clientId);
         assert client != null;
         client.clean();
@@ -68,26 +64,23 @@ public class Context {
     /**
      * 关闭空闲的客户端
      */
-    public synchronized void closeIdleClient() {
-        Set<String> clientIdSet = new HashSet<>();
-        for (Tunnel ti : tunnelMap.values()) {
-            clientIdSet.add(ti.getClientId());
-        }
-        for (Entry<String, Client> e : clientMap.entrySet()) {
-            if (!clientIdSet.contains(e.getKey())) {
-                e.getValue().close();
+    public void closeIdleClient() {
+        Set<String> clientIdSet = tunnelMap.values().stream().map(Tunnel::getClientId).collect(Collectors.toSet());
+        clientMap.forEach((clientId, client) -> {
+            if (!clientIdSet.contains(clientId)) {
+                client.close();
             }
-        }
+        });
     }
 
     /**
      * 关闭心跳超时的客户端
      */
-    public synchronized void closePingTimeoutClient() {
-        for (Client e : clientMap.values()) {
-            if (System.currentTimeMillis() > e.getLastPingTime() + pingTimeout) {
-                e.close();
+    public void closePingTimeoutClient() {
+        clientMap.forEach((clientId, client) -> {
+            if (System.currentTimeMillis() > client.getLastPingTime() + pingTimeout) {
+                client.close();
             }
-        }
+        });
     }
 }

@@ -1,8 +1,8 @@
 package ngrok.client;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ngrok.client.model.Tunnel;
 import ngrok.common.Exitable;
@@ -16,17 +16,17 @@ public class Context {
     public int soTimeout;
     public boolean useSsl;
 
-    private List<Exitable> proxyConnects = Collections.synchronizedList(new ArrayList<>());
+    private CopyOnWriteArrayList<Exitable> proxyConnects = new CopyOnWriteArrayList<>();
 
-    public synchronized void addProxyConnect(Exitable connect) {
+    public void addProxyConnect(Exitable connect) {
         proxyConnects.add(connect);
     }
 
-    public synchronized void removeProxyConnect(Exitable connect) {
+    public void removeProxyConnect(Exitable connect) {
         proxyConnects.remove(connect);
     }
 
-    public synchronized void clean() {
+    public void clean() {
         for (Tunnel tunnel : tunnelList) {
             tunnel.clean();
         }
@@ -44,13 +44,13 @@ public class Context {
     /** 已退出 */
     public static final int EXITED = 3;
 
-    private volatile int status = PENDING;
+    private AtomicInteger status = new AtomicInteger(PENDING);
 
-    public synchronized int getStatus() {
-        return this.status;
+    public int getStatus() {
+        return this.status.get();
     }
 
-    public synchronized void setStatus(int status) {
-        this.status = status;
+    public void setStatus(int status) {
+        this.status.set(status);
     }
 }

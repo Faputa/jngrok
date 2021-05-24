@@ -2,14 +2,13 @@ package ngrok.server.model;
 
 import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class Request {
 
     private String url;
     private Socket outerSocket;
-    private BlockingQueue<Socket> proxySocket = new ArrayBlockingQueue<>(1);
+    private ArrayBlockingQueue<Socket> proxySocket = new ArrayBlockingQueue<>(1);
 
     public Request(String url, Socket outerSocket) {
         this.url = url;
