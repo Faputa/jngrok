@@ -48,7 +48,7 @@ public class ProxyConnect implements Runnable, Exitable {
             log.info("收到服务器信息：" + msg);
             Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
             if ("StartProxy".equals(protocol.Type)) {
-                handleStartProxy(socket, protocol);
+                handleStartProxy(socket, protocol, pr);
             }
         } catch (SimpleException e) {
             // ignore
@@ -59,7 +59,7 @@ public class ProxyConnect implements Runnable, Exitable {
         }
     }
 
-    private void handleStartProxy(Socket socket, Protocol protocol) throws SimpleException, IOException {
+    private void handleStartProxy(Socket socket, Protocol protocol, PacketReader pr) throws SimpleException, IOException {
         Tunnel tunnel = getTunnelByUrl(protocol.Payload.Url);
         if (tunnel == null) {
             String html = "没有找到对应的管道：" + protocol.Payload.Url;
@@ -76,6 +76,7 @@ public class ProxyConnect implements Runnable, Exitable {
             thread.setDaemon(true);
             thread.start();
             try {
+                SocketHelper.sendbuf(socket, pr.getBuf());
                 SocketHelper.forward(socket, localSocket);
             } catch (Exception e) {
                 // ignore

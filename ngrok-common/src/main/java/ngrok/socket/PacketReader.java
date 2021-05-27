@@ -11,7 +11,7 @@ import java.net.SocketException;
 public class PacketReader {
 
     private Socket socket;
-    private byte[] para = new byte[0];
+    private byte[] buf = new byte[0];
 
     public PacketReader(Socket socket) {
         this.socket = socket;
@@ -25,21 +25,21 @@ public class PacketReader {
     @Nullable
     public String read() throws IOException {
         while (true) {
-            if (para.length >= 8) {
-                int size = ByteUtil.decodeInt(ByteUtil.subArr(para, 0, 8));
-                if (para.length >= size + 8) {
-                    String str = new String(para, 8, size);
-                    para = ByteUtil.subArr(para, size + 8);
+            if (buf.length >= 8) {
+                int size = ByteUtil.decodeInt(ByteUtil.subArr(buf, 0, 8));
+                if (buf.length >= size + 8) {
+                    String str = new String(buf, 8, size);
+                    buf = ByteUtil.subArr(buf, size + 8);
                     return str;
                 }
             }
             InputStream is = socket.getInputStream();
-            byte[] buf = new byte[1024];
-            int len = is.read(buf);
+            byte[] bs = new byte[1024];
+            int len = is.read(bs);
             if (len == -1) {
                 return null;
             }
-            para = ByteUtil.concat(para, buf, len);
+            buf = ByteUtil.concat(buf, bs, len);
         }
     }
 
@@ -50,6 +50,10 @@ public class PacketReader {
     }
 
     public void clean() {
-        para = new byte[0];
+        buf = new byte[0];
+    }
+
+    public byte[] getBuf() {
+        return buf;
     }
 }
