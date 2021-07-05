@@ -1,14 +1,15 @@
 package ngrok.server.model;
 
 import java.net.Socket;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import ngrok.util.BlockingCell;
 
 public class Request {
 
     private String url;
     private Socket outerSocket;
-    private ArrayBlockingQueue<Socket> proxySocket = new ArrayBlockingQueue<>(1);
+    private BlockingCell<Socket> proxySocket = new BlockingCell<>();
 
     public Request(String url, Socket outerSocket) {
         this.url = url;
@@ -24,10 +25,10 @@ public class Request {
     }
 
     public Socket getProxySocket(long timeout, TimeUnit unit) throws InterruptedException {
-        return proxySocket.poll(timeout, unit);
+        return proxySocket.get(timeout, unit);
     }
 
-    public void setProxySocket(Socket proxySocket) throws InterruptedException {
-        this.proxySocket.put(proxySocket);
+    public void setProxySocket(Socket proxySocket) {
+        this.proxySocket.set(proxySocket);
     }
 }
