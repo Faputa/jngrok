@@ -76,7 +76,7 @@ public class ProxyConnect implements Runnable, Exitable {
             thread.setDaemon(true);
             thread.start();
             try {
-                SocketHelper.sendbuf(socket, pr.getBuf());
+                SocketHelper.sendbuf(localSocket, pr.getBuf());
                 SocketHelper.forward(socket, localSocket);
             } catch (Exception e) {
                 // ignore
