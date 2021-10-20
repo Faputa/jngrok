@@ -92,12 +92,13 @@ public class ClientHandler implements Runnable, Exitable {
             throw new SimpleException();
         }
         try {
-            SocketHelper.sendpack(socket, Message.StartProxy(request.getUrl()));
+            String clientAddr = request.getPublicSocket().getRemoteSocketAddress().toString();
+            SocketHelper.sendpack(socket, Message.StartProxy(request.getUrl(), clientAddr));
             request.setProxySocket(socket);
         } catch (Exception e) {
             log.error(e.toString(), e);
         }
-        try (Socket outerSocket = request.getOuterSocket()) {
+        try (Socket outerSocket = request.getPublicSocket()) {
             SocketHelper.sendpack(client.getControlSocket(), Message.ReqProxy());
             SocketHelper.forward(socket, outerSocket);
         } catch (Exception e) {
@@ -106,7 +107,7 @@ public class ClientHandler implements Runnable, Exitable {
     }
 
     private void handleAuth(Socket socket, PacketReader pr, Protocol protocol) throws SimpleException, IOException {
-        if (context.authToken != null && !context.authToken.equals(protocol.Payload.AuthToken)) {
+        if (context.authToken != null && !context.authToken.equals(protocol.Payload.User)) {
             SocketHelper.sendpack(socket, Message.AuthResp(null, "Auth token check failure"));
             throw new SimpleException();
         }

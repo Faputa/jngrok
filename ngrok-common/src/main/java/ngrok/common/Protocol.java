@@ -24,9 +24,6 @@ public class Protocol {
         @Expose public String Error;
         @Expose public String Url;
         @Expose public String ClientAddr;
-
-        // 扩展字段，增加token校验功能
-        @Expose public String AuthToken;
     }
 
     @Expose public String Type;

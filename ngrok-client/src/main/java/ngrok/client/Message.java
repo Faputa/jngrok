@@ -18,9 +18,8 @@ public class Message {
         payload.Arch = "amd64";
         payload.Version = "2";
         payload.MmVersion = "1.7";
-        payload.User = "user";
+        payload.User = AuthToken;
         payload.Password = "";
-        payload.AuthToken = AuthToken;
         Protocol protocol = new Protocol();
         protocol.Type = "Auth";
         protocol.Payload = payload;

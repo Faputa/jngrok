@@ -8,20 +8,20 @@ import ngrok.util.BlockingCell;
 public class Request {
 
     private String url;
-    private Socket outerSocket;
+    private Socket publicSocket;
     private BlockingCell<Socket> proxySocket = new BlockingCell<>();
 
-    public Request(String url, Socket outerSocket) {
+    public Request(String url, Socket publicSocket) {
         this.url = url;
-        this.outerSocket = outerSocket;
+        this.publicSocket = publicSocket;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public Socket getOuterSocket() {
-        return outerSocket;
+    public Socket getPublicSocket() {
+        return publicSocket;
     }
 
     public Socket getProxySocket(long timeout, TimeUnit unit) throws InterruptedException {

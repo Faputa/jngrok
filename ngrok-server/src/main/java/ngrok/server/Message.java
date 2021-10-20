@@ -41,9 +41,10 @@ public class Message {
         return GsonUtil.toJson(protocol);
     }
 
-    public static String StartProxy(String Url) {
+    public static String StartProxy(String Url, String ClientAddr) {
         Payload payload = new Payload();
         payload.Url = Url;
+        payload.ClientAddr = ClientAddr;
         Protocol protocol = new Protocol();
         protocol.Type = "StartProxy";
         protocol.Payload = payload;
