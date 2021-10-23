@@ -1,11 +1,12 @@
 package ngrok.client;
 
+import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ngrok.client.model.Tunnel;
 import ngrok.common.Exitable;
+import ngrok.socket.SocketHelper;
 
 public class Context {
 
@@ -15,6 +16,7 @@ public class Context {
     public String authToken;
     public int soTimeout;
     public boolean useSsl;
+    public int pingTime;
 
     private CopyOnWriteArrayList<Exitable> proxyConnects = new CopyOnWriteArrayList<>();
 
@@ -35,22 +37,10 @@ public class Context {
         }
     }
 
-    /** 待机中 */
-    public static final int PENDING = 0;
-    /** 已连接 */
-    public static final int CONNECTED = 1;
-    /** 已认证 */
-    public static final int AUTHERIZED = 2;
-    /** 已退出 */
-    public static final int EXITED = 3;
-
-    private AtomicInteger status = new AtomicInteger(PENDING);
-
-    public int getStatus() {
-        return this.status.get();
-    }
-
-    public void setStatus(int status) {
-        this.status.set(status);
+    public Socket connectServer() throws Exception {
+        Socket socket = useSsl
+        ? SocketHelper.newSSLSocket(serverHost, serverPort, soTimeout)
+        : SocketHelper.newSocket(serverHost, serverPort, soTimeout);
+        return socket;
     }
 }

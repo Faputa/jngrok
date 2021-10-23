@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import ngrok.client.Context;
 import ngrok.client.Message;
 import ngrok.client.model.Tunnel;
-import ngrok.common.SimpleException;
 import ngrok.common.Exitable;
 import ngrok.common.Protocol;
 import ngrok.socket.PacketReader;
@@ -29,29 +28,27 @@ public class ProxyConnect implements Runnable, Exitable {
     private Socket socket;
     private Context context;
 
-    public ProxyConnect(Socket socket, String clientId, Context context) {
-        this.socket = socket;
+    public ProxyConnect(String clientId, Context context) {
         this.clientId = clientId;
         this.context = context;
     }
 
     @Override
     public void run() {
-        try (Socket socket = this.socket) {
+        try (Socket socket = context.connectServer()) {
+            this.socket = socket;
             context.addProxyConnect(this);
             SocketHelper.sendpack(socket, Message.RegProxy(clientId));
             PacketReader pr = new PacketReader(socket, context.soTimeout);
             String msg = pr.read();
             if (msg == null) {
-                throw new SimpleException();
+                return;
             }
             log.info("收到服务器信息：" + msg);
             Protocol protocol = GsonUtil.toBean(msg, Protocol.class);
             if ("StartProxy".equals(protocol.Type)) {
                 handleStartProxy(socket, protocol, pr);
             }
-        } catch (SimpleException e) {
-            // ignore
         } catch (Exception e) {
             log.error(e.toString(), e);
         } finally {
@@ -59,7 +56,7 @@ public class ProxyConnect implements Runnable, Exitable {
         }
     }
 
-    private void handleStartProxy(Socket socket, Protocol protocol, PacketReader pr) throws SimpleException, IOException {
+    private void handleStartProxy(Socket socket, Protocol protocol, PacketReader pr) throws IOException {
         Tunnel tunnel = getTunnelByUrl(protocol.Payload.Url);
         if (tunnel == null) {
             String html = "没有找到对应的管道：" + protocol.Payload.Url;
@@ -68,7 +65,7 @@ public class ProxyConnect implements Runnable, Exitable {
             header += "Content-Length: " + html.getBytes().length + "\r\n\r\n";
             header = header + html;
             SocketHelper.sendbuf(socket, header.getBytes());
-            throw new SimpleException();
+            return;
         }
         log.info("建立本地连接：[host]={} [port]={}", tunnel.localHost, tunnel.localPort);
         try (Socket localSocket = SocketHelper.newSocket(tunnel.localHost, tunnel.localPort, context.soTimeout)) {

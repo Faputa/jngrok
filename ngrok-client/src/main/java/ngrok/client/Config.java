@@ -15,6 +15,6 @@ public class Config {
     @Expose String authToken;
     /** 套接字超时时间8个小时 */
     @Expose int soTimeout = 28800000;
-    @Expose long pingTime = 10000;
+    @Expose int pingTime = 10000;
     @Expose boolean useSsl = true;
 }
