@@ -38,9 +38,9 @@ public class Context {
     }
 
     public Socket connectServer() throws Exception {
-        Socket socket = useSsl
-        ? SocketHelper.newSSLSocket(serverHost, serverPort, soTimeout)
-        : SocketHelper.newSocket(serverHost, serverPort, soTimeout);
-        return socket;
+        if (useSsl) {
+            return SocketHelper.newSSLSocket(serverHost, serverPort, soTimeout);
+        }
+        return SocketHelper.newSocket(serverHost, serverPort, soTimeout);
     }
 }
